@@ -2,34 +2,33 @@
 Physijs.scripts.worker = '../js/physijs_worker.js';
 Physijs.scripts.ammo = '../js/ammo.js';
 
-var initScene, render, applyForce, setMousePosition, mouse_position,
-    count, controls,
+var count, controls,
     ground_material, box_material,
     projector, renderer, scene, ground, light, camera, box, center;
 
-initScene = function() {
+function init() {
   projector = new THREE.Projector;
-  renderer = new THREE.CanvasRenderer({ antialias: true });
-  renderer.setSize( window.innerWidth, window.innerHeight );
-  document.getElementById( 'viewport' ).appendChild( renderer.domElement );
+  renderer = new THREE.CanvasRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.getElementById('viewport').appendChild(renderer.domElement);
   count = 0;
 
   scene = new Physijs.Scene;
-  scene.setGravity(new THREE.Vector3( 0, 0, 0 ));
+  scene.setGravity(new THREE.Vector3(0, 0, 0));
   scene.addEventListener(
     'update',
     function() {
       applyForce();
-      scene.simulate( undefined, 1 );
+      scene.simulate(undefined, 1);
     });
   camera = new THREE.PerspectiveCamera(
     35,
     window.innerWidth / window.innerHeight,
     1,
     1000);
-  camera.position.set( 0, 0, 150 );
-  camera.lookAt( scene.position );
-  scene.add( camera );
+  camera.position.set(0, 0, 150);
+  camera.lookAt(scene.position);
+  scene.add(camera);
 
   controls = new THREE.TrackballControls(camera);
   controls.rotateSpeed = 1.0;
@@ -41,16 +40,16 @@ initScene = function() {
   controls.dynamicDampingFactor = 0.3;
 
   // Light
-  light = new THREE.DirectionalLight( 0xFFFFFF );
-  light.position.set( 20, 40, 35 );
-  light.target.position.copy( scene.position );
-  scene.add( light );
+  light = new THREE.DirectionalLight(0xFFFFFF);
+  light.position.set(20, 40, 35);
+  light.target.position.copy(scene.position);
+  scene.add(light);
 
   // Materials
   ground_material = Physijs.createMaterial(
     new THREE.MeshLambertMaterial(),
       .8, // high friction
-      .4 // low restitution
+      .4  // low restitution
   );
 
   box_material = Physijs.createMaterial(
@@ -62,23 +61,17 @@ initScene = function() {
     ground_material,
     0 // mass
   );
-  ground.position.set(
-    0,
-    -10,
-    0);
-  scene.add( ground );
+  ground.position.set(0, -15, 0);
+  scene.add(ground);
 
   var boxes = [];
   for ( var i = 0; i < 5; i++ ) {
     box = new Physijs.BoxMesh(
-      new THREE.CubeGeometry( 7, 5, 4 ),
+      new THREE.CubeGeometry(7, 5, 4),
       box_material);
-    box.position.set(
-      0,
-      0+i*6,
-      0);
-    scene.add( box );
-    boxes.push( box );
+    box.position.set(0, i*6, 0);
+    scene.add(box);
+    boxes.push(box);
     if ( i == 0 )
       continue;
 
@@ -99,43 +92,27 @@ initScene = function() {
   }
   center = boxes[2];
 
-  renderer.domElement.addEventListener( 'mousemove', setMousePosition );
-
-  requestAnimationFrame( render );
+  requestAnimationFrame(render);
   scene.simulate();
 };
 
-render = function() {
+function render() {
   controls.update();
-  requestAnimationFrame( render );
-  renderer.render( scene, camera );
+  requestAnimationFrame(render);
+  renderer.render(scene, camera);
 };
 
-setMousePosition = function( evt ) {
-  // Find where mouse cursor intersects the ground plane
-  var vector = new THREE.Vector3(
-    ( evt.clientX / renderer.domElement.clientWidth ) * 2 - 1,
-      -( ( evt.clientY / renderer.domElement.clientHeight ) * 2 - 1 ),
-      .5);
-  projector.unprojectVector( vector, camera );
-  vector.sub( camera.position ).normalize();
-
-  var coefficient = (box.position.y - camera.position.y) / vector.y
-  mouse_position =
-    camera.position.clone().add( vector.multiplyScalar( coefficient ) );
-};
-
-applyForce = function() {
+function applyForce() {
   if ( ++count > 20 ) {
     return;
   }
   var strength = 30, distance, effect, offset;
 
   effect =
-    new THREE.Vector3(0,0,1).multiplyScalar( strength );
+    new THREE.Vector3(0,0,1).multiplyScalar(strength);
   offset = new THREE.Vector3(5,-18,-2)
-  center.applyImpulse( effect, offset );
-  center.applyImpulse( effect.negate(), offset.negate() );
+  center.applyImpulse(effect, offset);
+  center.applyImpulse(effect.negate(), offset.negate());
 };
 
-window.onload = initScene;
+window.onload = init;
