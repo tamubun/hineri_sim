@@ -27,7 +27,7 @@ initScene = function() {
     window.innerWidth / window.innerHeight,
     1,
     1000);
-  camera.position.set( 60, 50, 150 );
+  camera.position.set( 0, 0, 150 );
   camera.lookAt( scene.position );
   scene.add( camera );
 
@@ -42,7 +42,7 @@ initScene = function() {
 
   // Light
   light = new THREE.DirectionalLight( 0xFFFFFF );
-  light.position.set( 20, 40, -15 );
+  light.position.set( 20, 40, 35 );
   light.target.position.copy( scene.position );
   scene.add( light );
 
