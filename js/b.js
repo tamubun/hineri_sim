@@ -3,7 +3,7 @@ Physijs.scripts.worker = '../js/physijs_worker.js';
 Physijs.scripts.ammo = '../js/ammo.js';
 
 var initScene, render, applyForce, setMousePosition, mouse_position,
-    count,
+    count, controls,
     ground_material, box_material,
     projector, renderer, scene, ground, light, camera, box, center;
 
@@ -11,8 +11,6 @@ initScene = function() {
   projector = new THREE.Projector;
   renderer = new THREE.CanvasRenderer({ antialias: true });
   renderer.setSize( window.innerWidth, window.innerHeight );
-  renderer.shadowMapEnabled = true;
-  renderer.shadowMapSoft = true;
   document.getElementById( 'viewport' ).appendChild( renderer.domElement );
   count = 0;
 
@@ -33,20 +31,19 @@ initScene = function() {
   camera.lookAt( scene.position );
   scene.add( camera );
 
+  controls = new THREE.TrackballControls(camera);
+  controls.rotateSpeed = 1.0;
+  controls.zoomSpeed = 1.2;
+  controls.panSpeed = 0.8;
+  controls.noZoom = false;
+  controls.noPan = false;
+  controls.staticMoving = true;
+  controls.dynamicDampingFactor = 0.3;
+
   // Light
   light = new THREE.DirectionalLight( 0xFFFFFF );
   light.position.set( 20, 40, -15 );
   light.target.position.copy( scene.position );
-  light.castShadow = true;
-  light.shadowCameraLeft = -60;
-  light.shadowCameraTop = -60;
-  light.shadowCameraRight = 60;
-  light.shadowCameraBottom = 60;
-  light.shadowCameraNear = 20;
-  light.shadowCameraFar = 200;
-  light.shadowBias = -.0001
-  light.shadowMapWidth = light.shadowMapHeight = 2048;
-  light.shadowDarkness = .7;
   scene.add( light );
 
   // Materials
@@ -69,8 +66,7 @@ initScene = function() {
     0,
     -10,
     0);
-  ground.receiveShadow = true;
-  //  scene.add( ground );
+  scene.add( ground );
 
   var boxes = [];
   for ( var i = 0; i < 5; i++ ) {
@@ -81,7 +77,6 @@ initScene = function() {
       0,
       0+i*6,
       0);
-    box.castShadow = true;
     scene.add( box );
     boxes.push( box );
     if ( i == 0 )
@@ -111,6 +106,7 @@ initScene = function() {
 };
 
 render = function() {
+  controls.update();
   requestAnimationFrame( render );
   renderer.render( scene, camera );
 };
