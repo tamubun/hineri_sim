@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 
 <html>
-
 <head>
+<meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
 <title>Rigid body - Physijs</title>
 	
 <script type="text/javascript" src="js/jquery-1.7.2.min.js"></script>
@@ -14,7 +14,16 @@
 
 <body>
 <div id="heading">
-  <input id="startstop" type="button" value="start" />
+  <div>
+    <input id="startstop" type="button" value="start" />
+  </div>
+  <div>
+    <label>幅</label> <input id="haba" type="number" value="7" />
+    <label>奥行き</label><input id="okuyuki" type="number" value="4" />
+  </div>
+  <div>
+    <label>WebGL</label><input id="gl" type="checkbox" />
+  </div>
 </div>
 <div id="viewport"></div>
 </body>

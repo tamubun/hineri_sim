@@ -2,21 +2,42 @@
 Physijs.scripts.worker = '../js/physijs_worker.js';
 Physijs.scripts.ammo = '../js/ammo.js';
 
-var count, controls, boxes,
+var started, count, controls, boxes,
     ground_material, box_material,
     projector, renderer, scene, ground, light, camera, center;
 
-function init() {
+function initGlobal() {
   projector = new THREE.Projector;
-  renderer = new THREE.CanvasRenderer();
+
+  // Materials
+  ground_material = Physijs.createMaterial(
+    new THREE.MeshLambertMaterial(),
+      .8, // high friction
+      .4  // low restitution
+  );
+
+  box_material = Physijs.createMaterial(
+    new THREE.MeshLambertMaterial({color:0x3300cc}));
+}
+
+function init() {
+  var webgl = $('#gl').attr('checked') != null;
+  if ( webgl ) {
+    renderer = new THREE.WebGLRenderer();
+    renderer.shadowMapEnabled = true;
+  } else {
+    renderer = new THREE.CanvasRenderer();
+  }
   renderer.setSize(window.innerWidth, window.innerHeight);
-  document.getElementById('viewport').appendChild(renderer.domElement);
+  $('#viewport').append(renderer.domElement);
 
   scene = new Physijs.Scene;
   scene.setGravity(new THREE.Vector3(0, 0, 0));
   scene.addEventListener(
     'update',
     function() {
+      if ( !started )
+        return;
       applyForce();
       scene.simulate(undefined, 1);
     });
@@ -42,17 +63,19 @@ function init() {
   light = new THREE.DirectionalLight(0xFFFFFF);
   light.position.set(20, 40, 35);
   light.target.position.copy(scene.position);
+  if ( webgl ) {
+    light.castShadow = true;
+    light.shadowCameraLeft = -60;
+    light.shadowCameraTop = -60;
+    light.shadowCameraRight = 60;
+    light.shadowCameraBottom = 60;
+    light.shadowCameraNear = 20;
+    light.shadowCameraFar = 200;
+    light.shadowBias = -.0001
+    light.shadowMapWidth = light.shadowMapHeight = 2048;
+    light.shadowDarkness = .7;
+  }
   scene.add(light);
-
-  // Materials
-  ground_material = Physijs.createMaterial(
-    new THREE.MeshLambertMaterial(),
-      .8, // high friction
-      .4  // low restitution
-  );
-
-  box_material = Physijs.createMaterial(
-    new THREE.MeshLambertMaterial({color:0x3300cc}));
 
   count = 0;
 
@@ -63,15 +86,18 @@ function init() {
     0 // mass
   );
   ground.position.set(0, -15, 0);
+  ground.receiveShadow = true;
   scene.add(ground);
 
   var box;
   boxes = [];
   for ( var i = 0; i < 5; i++ ) {
     box = new Physijs.BoxMesh(
-      new THREE.CubeGeometry(7, 5, 4),
+      new THREE.CubeGeometry(
+        Number($('#haba').val()), 5, Number($('#okuyuki').val())),
       box_material);
     box.position.set(0, i*6, 0);
+    box.castShadow = true;
     scene.add(box);
     boxes.push(box);
     if ( i == 0 )
@@ -99,6 +125,8 @@ function init() {
 };
 
 function render() {
+  if ( !started )
+    return;
   controls.update();
   requestAnimationFrame(render);
   renderer.render(scene, camera);
@@ -118,8 +146,20 @@ function applyForce() {
 };
 
 $(function() {
+  started = false;
+
+  initGlobal();
+
   $('#startstop').click(function(){
-    init();
-    $(this).remove();
+    if ( !started ) {
+      started = true;
+      init();
+      $(this).attr('value', 'stop');
+    } else {
+      started = false;
+      controls.enabled = false;
+      $('#startstop').attr('value', 'start');
+      $('#viewport').children().remove();
+    }
   });
 });
