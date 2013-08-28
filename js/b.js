@@ -2,16 +2,15 @@
 Physijs.scripts.worker = '../js/physijs_worker.js';
 Physijs.scripts.ammo = '../js/ammo.js';
 
-var count, controls,
+var count, controls, boxes,
     ground_material, box_material,
-    projector, renderer, scene, ground, light, camera, box, center;
+    projector, renderer, scene, ground, light, camera, center;
 
 function init() {
   projector = new THREE.Projector;
   renderer = new THREE.CanvasRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.getElementById('viewport').appendChild(renderer.domElement);
-  count = 0;
 
   scene = new Physijs.Scene;
   scene.setGravity(new THREE.Vector3(0, 0, 0));
@@ -55,6 +54,8 @@ function init() {
   box_material = Physijs.createMaterial(
     new THREE.MeshLambertMaterial({color:0x3300cc}));
 
+  count = 0;
+
   // Ground
   ground = new Physijs.BoxMesh(
     new THREE.CubeGeometry(100, 1, 100),
@@ -64,7 +65,8 @@ function init() {
   ground.position.set(0, -15, 0);
   scene.add(ground);
 
-  var boxes = [];
+  var box;
+  boxes = [];
   for ( var i = 0; i < 5; i++ ) {
     box = new Physijs.BoxMesh(
       new THREE.CubeGeometry(7, 5, 4),
@@ -115,4 +117,9 @@ function applyForce() {
   center.applyImpulse(effect.negate(), offset.negate());
 };
 
-window.onload = init;
+$(function() {
+  $('#startstop').click(function(){
+    init();
+    $(this).remove();
+  });
+});
