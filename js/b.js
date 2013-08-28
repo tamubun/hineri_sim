@@ -1,10 +1,12 @@
 'use strict';
 Physijs.scripts.worker = '../js/physijs_worker.js';
 Physijs.scripts.ammo = '../js/ammo.js';
+
 var initScene, render, applyForce, setMousePosition, mouse_position,
-count,
-ground_material, box_material,
-projector, renderer, scene, ground, light, camera, box, boxes = [];
+    count,
+    ground_material, box_material,
+    projector, renderer, scene, ground, light, camera, box, center;
+
 initScene = function() {
   projector = new THREE.Projector;
   renderer = new THREE.CanvasRenderer({ antialias: true });
@@ -55,10 +57,7 @@ initScene = function() {
   );
 
   box_material = Physijs.createMaterial(
-    new THREE.MeshLambertMaterial({color:0x3300cc}),
-      .4, // low friction
-      .6 // high restitution
-  );
+    new THREE.MeshLambertMaterial({color:0x3300cc}));
 
   // Ground
   ground = new Physijs.BoxMesh(
@@ -68,12 +67,13 @@ initScene = function() {
   );
   ground.position.set(
     0,
-      -10,
+    -10,
     0);
   ground.receiveShadow = true;
   //  scene.add( ground );
 
-  for ( var i = 0; i < 4; i++ ) {
+  var boxes = [];
+  for ( var i = 0; i < 5; i++ ) {
     box = new Physijs.BoxMesh(
       new THREE.CubeGeometry( 7, 5, 4 ),
       box_material);
@@ -102,6 +102,7 @@ initScene = function() {
     );
     scene.addConstraint(constraint);
   }
+  center = boxes[2];
 
   renderer.domElement.addEventListener( 'mousemove', setMousePosition );
 
@@ -132,13 +133,13 @@ applyForce = function() {
   if ( ++count > 20 ) {
     return;
   }
-  var strength = 30, distance, effect, offset, box;
+  var strength = 30, distance, effect, offset;
 
-  box = boxes[0];
   effect =
-    new THREE.Vector3(0,0,1).multiplyScalar( strength ).negate(),
+    new THREE.Vector3(0,0,1).multiplyScalar( strength );
   offset = new THREE.Vector3(5,-18,-2)
-  box.applyImpulse( effect, offset );
+  center.applyImpulse( effect, offset );
+  center.applyImpulse( effect.negate(), offset.negate() );
 };
 
 window.onload = initScene;
