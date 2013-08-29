@@ -104,41 +104,77 @@ function init() {
   if ( $('#wall').attr('checked') != null )
     scene.add(wall);
 
-  var box;
+  var box, constraint,
+      haba = Number($('#haba').val()),
+      okuyuki = Number($('#okuyuki').val()),
+      takasa = 5;
   boxes = [];
   for ( var i = 0; i < 5; i++ ) {
     box = new Physijs.BoxMesh(
-      new THREE.CubeGeometry(
-        Number($('#haba').val()), 5, Number($('#okuyuki').val())),
-      box_material);
-    box.position.set(0, -10+i*6, 0);
+      new THREE.CubeGeometry(haba, takasa, okuyuki), box_material);
+    box.position.set(0, -10+i*(takasa+1), 0);
     box.castShadow = true;
     if ( i == 3 && $('#arch').attr('checked') != null )
-      box.position.z -=0.4;
+      box.position.z -= 0.1 * okuyuki;
     else if ( i == 4 && $('#arch').attr('checked') != null )
-      box.position.z -=1.4;
+      box.position.z -= 0.35 * okuyuki;
     boxes.push(box);
     scene.add(box);
 
     if ( i == 0 )
       continue;
 
-    var constraint = new Physijs.HingeConstraint(
+    constraint = new Physijs.HingeConstraint(
       box,
       boxes[i-1],
-      new THREE.Vector3(0, i*6-13, 0),
+      new THREE.Vector3(0, i*(takasa+1)-13, 0),
       new THREE.Vector3(1, 0, 0)
     );
     scene.addConstraint(constraint);
     constraint = new Physijs.HingeConstraint(
       box,
       boxes[i-1],
-      new THREE.Vector3(0, i*6-13, 0),
+      new THREE.Vector3(0, i*(takasa+1)-13, 0),
       new THREE.Vector3(0, 0, 1)
     );
     scene.addConstraint(constraint);
   }
   bottom = boxes[0];
+
+  if ( $('#arm').attr('checked') != null ) {
+    for ( var i = 0; i < 2; ++i ) {
+      box = new Physijs.BoxMesh(
+        new THREE.CubeGeometry(0.2*haba, 1.8 * takasa, 0.2*haba),
+        box_material);
+      box.position.set(
+        boxes[3].position.x + (i == 0 ? 1 : -1) * 0.7 * haba,
+        boxes[3].position.y + takasa,
+        boxes[3].position.z);
+      box.castShadow = true;
+      scene.add(box);
+      boxes.push(box);
+      constraint = new Physijs.HingeConstraint(
+        box,
+        boxes[3],
+        new THREE.Vector3(
+          boxes[3].position.x + (i == 0 ? 1 : -1) * 0.65 * haba,
+          boxes[3].position.y,
+          boxes[3].position.z),
+        new THREE.Vector3(0, 0, 1)
+      );
+      scene.addConstraint(constraint);
+      constraint = new Physijs.HingeConstraint(
+        box,
+        boxes[3],
+        new THREE.Vector3(
+          boxes[3].position.x + (i == 0 ? 1 : -1) * 0.65 * haba,
+          boxes[3].position.y,
+          boxes[3].position.z),
+        new THREE.Vector3(0, 1, 0)
+      );
+      scene.addConstraint(constraint);
+    }
+  }
 
   requestAnimationFrame(render);
   scene.simulate();
@@ -218,13 +254,19 @@ $(function() {
       $(this).attr('value', 'stop');
       $('#pause').removeAttr('disabled');
       $('#jump').removeAttr('disabled');
+      $('#right').removeAttr('disabled');
       $('#controls input').attr('disabled', true);
+      if ( $('#arm').attr('checked') == null )
+        $('#drop').attr('disabled', true);
+      else
+        $('#drop').removeAttr('disabled');
     } else {
       started = false;
       controls.enabled = false;
       $('#startstop').attr('value', 'start');
       $('#pause').attr('disabled', true).attr('value', 'pause');
       $('#jump').attr('disabled', true);
+      $('#right').removeAttr('disabled');
       $('#viewport').children().remove();
       $('body').off('keydown');
       $('#controls input').removeAttr('disabled');
