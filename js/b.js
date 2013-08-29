@@ -2,7 +2,7 @@
 Physijs.scripts.worker = '../js/physijs_worker.js';
 Physijs.scripts.ammo = '../js/ammo.js';
 
-var started, paused, jumped, count, controls, boxes,
+var started, paused, count, controls, boxes,
     jumptime, hineritime,
     box_material,
     projector, renderer, scene, ground, wall, camera, bottom;
@@ -39,7 +39,6 @@ function initGlobal() {
 function init() {
   count = 0;
   paused = false;
-  jumped = false;
   jumptime = -1000;
   hineritime = -1000;
 
@@ -143,8 +142,6 @@ function init() {
 
   requestAnimationFrame(render);
   scene.simulate();
-
-  $('body').keydown(function(ev) { doKey(ev) });
 };
 
 function render() {
@@ -201,24 +198,11 @@ function applyForce() {
   bottom.applyImpulse(effect.negate(), offset.negate());
 };
 
-function doKey(ev) {
-  switch (ev.keyCode) {
-  case 74:
-  case 106:
-    // 'j', 'J'
-    if ( !jumped ) {
-      jumped = true;
-      jumptime = count + 30;
-    }
-    break;
-  case 72:
-  case 104:
-    // 'h', 'H'
-    if ( !jumped ) {
-      jumped = true;
-      hineritime = count + 30;
-    }
-    break;
+function doJump(notwist) {
+  if ( notwist ) {
+    jumptime = count + 30;
+  } else {
+    hineritime = count + 30;
   }
 }
 
@@ -233,12 +217,14 @@ $(function() {
       init();
       $(this).attr('value', 'stop');
       $('#pause').removeAttr('disabled');
+      $('#jump').removeAttr('disabled');
       $('#controls input').attr('disabled', true);
     } else {
       started = false;
       controls.enabled = false;
       $('#startstop').attr('value', 'start');
       $('#pause').attr('disabled', true).attr('value', 'pause');
+      $('#jump').attr('disabled', true);
       $('#viewport').children().remove();
       $('body').off('keydown');
       $('#controls input').removeAttr('disabled');
@@ -252,5 +238,9 @@ $(function() {
     }
     paused = !paused;
     $(this).attr('value', paused ? 'resume' : 'pause');
+  });
+
+  $('#jump').click(function() {
+    doJump($('#twist').attr('checked') == null);
   });
 });
