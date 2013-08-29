@@ -241,6 +241,7 @@ $(function() {
   });
 
   $('#jump').click(function() {
+    $(this).attr('disabled', true);
     doJump($('#twist').attr('checked') == null);
   });
 });
