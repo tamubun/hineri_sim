@@ -1,8 +1,8 @@
 'use strict';
-Physijs.scripts.worker = '../js/physijs_worker.js';
-Physijs.scripts.ammo = '../js/ammo.js';
+Physijs.scripts.worker = '/js/physijs_worker.js';
+Physijs.scripts.ammo = '/js/ammo.js';
 
-var started, paused, count, controls, boxes,
+var started, paused, count, controls, boxes, arm_constraints,
     jumptime, hineritime,
     box_material,
     projector, renderer, scene, ground, wall, camera, bottom;
@@ -141,6 +141,7 @@ function init() {
   }
   bottom = boxes[0];
 
+  arm_constraints = [];
   if ( $('#arm').attr('checked') != null ) {
     for ( var i = 0; i < 2; ++i ) {
       box = new Physijs.BoxMesh(
@@ -152,7 +153,6 @@ function init() {
         boxes[3].position.z);
       box.castShadow = true;
       scene.add(box);
-      boxes.push(box);
       constraint = new Physijs.HingeConstraint(
         box,
         boxes[3],
@@ -163,16 +163,8 @@ function init() {
         new THREE.Vector3(0, 0, 1)
       );
       scene.addConstraint(constraint);
-      constraint = new Physijs.HingeConstraint(
-        box,
-        boxes[3],
-        new THREE.Vector3(
-          boxes[3].position.x + (i == 0 ? 1 : -1) * 0.65 * haba,
-          boxes[3].position.y,
-          boxes[3].position.z),
-        new THREE.Vector3(0, 1, 0)
-      );
-      scene.addConstraint(constraint);
+      constraint.enableAngularMotor(1000, (i == 0 ? 1 : -1) * 500);
+      arm_constraints.push(constraint);
     }
   }
 
@@ -236,9 +228,9 @@ function applyForce() {
 
 function doJump(notwist) {
   if ( notwist ) {
-    jumptime = count + 30;
+    jumptime = count + 10;
   } else {
-    hineritime = count + 30;
+    hineritime = count + 10;
   }
 }
 
@@ -257,15 +249,16 @@ $(function() {
       $('#right').removeAttr('disabled');
       $('#controls input').attr('disabled', true);
       if ( $('#arm').attr('checked') == null )
-        $('#drop').attr('disabled', true);
+        $('.arm').each(function() { $(this).attr('disabled', true); });
       else
-        $('#drop').removeAttr('disabled');
+        $('.arm').each(function() { $(this).removeAttr('disabled', true); });
     } else {
       started = false;
       controls.enabled = false;
       $('#startstop').attr('value', 'start');
       $('#pause').attr('disabled', true).attr('value', 'pause');
       $('#jump').attr('disabled', true);
+      $('.arm').each(function() { $(this).attr('disabled', true); });
       $('#right').removeAttr('disabled');
       $('#viewport').children().remove();
       $('body').off('keydown');
@@ -285,5 +278,15 @@ $(function() {
   $('#jump').click(function() {
     $(this).attr('disabled', true);
     doJump($('#twist').attr('checked') == null);
+  });
+
+  $('.arm').click(function() {
+    var up = $(this).hasClass('up');
+    $(this).toggleClass('up');
+    if ( $(this).hasClass('left') ) {
+      arm_constraints[1].enableAngularMotor(1000, (up ? 1 : -1) * 500);
+    } else {
+      arm_constraints[0].enableAngularMotor(1000, (up ? -1 : 1) * 500);
+    }
   });
 });

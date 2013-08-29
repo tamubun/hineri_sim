@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 
 <html>
 <head>
@@ -12,12 +12,14 @@
 </head>
 
 <body>
-<H1>捻りシミュレーター(ブラウザ版)</H1>
-<div id="heading">
+<div>
+  <H1>捻りシミュレーター(ブラウザ版)</H1>
   <div>
     <input id="startstop" type="button" value="start" />
     <input id="pause" type="button" value="pause" disabled="true"/>
     <input id="jump" type="button" value="回転/ジャンプ" disabled="true"/>
+    <input id="left-arm" type="button" value="左腕" class="arm left up" disabled="true"/>
+    <input id="left-arm" type="button" value="右腕" class="arm up" disabled="true"/>
   </div>
   <div id='controls'>
     <div>
@@ -35,9 +37,9 @@
       <input id="wall" type="checkbox">鉛直面</input>
     </div>
   </div>
+  <p>左、中、右マウスクリックで視点を移動できます。</p>
+  <p>動作がおかしくなったときはページを読み込み直して下さい</p>
 </div>
-<p>左、中、右マウスクリックで視点を移動できます。腕の上げ下げは、まだ上手くできません。</p>
-<p>動作がおかしくなったときはページを読み込み直して下さい</p>
 <div id="viewport"></div>
 </body>
 
