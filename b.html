@@ -16,13 +16,23 @@
 <div id="heading">
   <div>
     <input id="startstop" type="button" value="start" />
+    <input id="pause" type="button" value="pause" disabled="true"/>
+  </div>
+  <div id='controls'>
+    <div>
+      <label>重力</label><input id="grav" type="checkbox" />
+      <label>反り</label><input id="arch" type="checkbox" />
+      <label>幅</label> <input id="haba" type="number" value="7" />
+      <label>奥行き</label><input id="okuyuki" type="number" value="4" />
+    </div>
+    <div>
+      <label>WebGL</label><input id="gl" type="checkbox" />
+      <label>鉛直面</label><input id="wall" type="checkbox" />
+    </div>
   </div>
   <div>
-    <label>幅</label> <input id="haba" type="number" value="7" />
-    <label>奥行き</label><input id="okuyuki" type="number" value="4" />
-  </div>
-  <div>
-    <label>WebGL</label><input id="gl" type="checkbox" />
+  <p>Jキー: 回転/宙返り開始</p>
+  <p>Hキー: 捻り回転/捻り宙返り開始</p>
   </div>
 </div>
 <div id="viewport"></div>
