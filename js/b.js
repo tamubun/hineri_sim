@@ -38,7 +38,7 @@ function initGlobal() {
     ground_material,
     0 // mass
   );
-  ground.position.set(0, -25, 0);
+  ground.position.set(0, -50, 0);
   ground.receiveShadow = true;
 
   var wall_geometry = new THREE.CubeGeometry(0.1, 300, 100);
@@ -58,7 +58,7 @@ function init() {
   } else {
     renderer = new THREE.CanvasRenderer();
   }
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(window.innerWidth*0.95, window.innerHeight*0.95);
   $('#viewport').append(renderer.domElement);
 
   scene = new Physijs.Scene;
@@ -116,12 +116,12 @@ function init() {
   var box, constraint,
       haba = Number($('#haba').val()),
       okuyuki = Number($('#okuyuki').val()),
-      takasa = 5;
+      takasa = 5, space = 1;
   boxes = [];
   for ( var i = 0; i < 5; i++ ) {
     box = new Physijs.BoxMesh(
       new THREE.CubeGeometry(haba, takasa, okuyuki), box_material);
-    box.position.set(0, -10+i*(takasa+1), 0);
+    box.position.set(0, -35+i*(takasa+space), 0);
     box.castShadow = true;
     if ( i == 3 && $('#arch').attr('checked') != null )
       box.position.z -= 0.1 * okuyuki;
@@ -136,7 +136,7 @@ function init() {
     constraint = new Physijs.HingeConstraint(
       box,
       boxes[i-1],
-      new THREE.Vector3(0, i*(takasa+1)-13, 0),
+      new THREE.Vector3(0, box.position.y - 0.5*(takasa+space),0),
       new THREE.Vector3(1, 0, 0)
     );
     scene.addConstraint(constraint);
