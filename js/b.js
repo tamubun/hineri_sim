@@ -1,6 +1,11 @@
 'use strict';
-Physijs.scripts.worker = '/js/physijs_worker.js';
-Physijs.scripts.ammo = '/js/ammo.js';
+
+var path = location.pathname.split("/");
+path.shift();
+path.pop();
+path = '/' + path.join('/');
+Physijs.scripts.worker = path + '/js/physijs_worker.js';
+Physijs.scripts.ammo = path + '/js/ammo.js';
 
 var started, paused, count, controls, boxes, arm_constraints,
     jumptime, hineritime,
