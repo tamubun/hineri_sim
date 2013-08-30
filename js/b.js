@@ -9,7 +9,7 @@ Physijs.scripts.ammo = path + '/js/ammo.js';
 
 var started, paused, count, controls, boxes, arm_constraints,
     jumptime, hineritime,
-    box_material,
+    box_material, red_material, green_material,
     projector, renderer, scene, ground, wall, camera, bottom;
 
 function initGlobal() {
@@ -24,6 +24,10 @@ function initGlobal() {
 
   box_material = Physijs.createMaterial(new THREE.MeshLambertMaterial(
     {color:0x3300cc}));
+  red_material = Physijs.createMaterial(new THREE.MeshLambertMaterial(
+    {color:0xff5500}));
+  green_material = Physijs.createMaterial(new THREE.MeshLambertMaterial(
+    {color:0x55ff00}));
 
   var wall_material = new THREE.MeshBasicMaterial(
     {color: 0x550000, transparent: true, opacity: 0.3});
@@ -151,7 +155,7 @@ function init() {
     for ( var i = 0; i < 2; ++i ) {
       box = new Physijs.BoxMesh(
         new THREE.CubeGeometry(0.2*haba, 1.8 * takasa, 0.2*haba),
-        box_material);
+        i == 0 ? red_material : green_material);
       box.position.set(
         boxes[3].position.x + (i == 0 ? 1 : -1) * 0.7 * haba,
         boxes[3].position.y + takasa,
@@ -248,7 +252,7 @@ $(function() {
     if ( !started ) {
       started = true;
       init();
-      $(this).attr('value', 'stop');
+      $(this).val('stop');
       $('#pause').removeAttr('disabled');
       $('#jump').removeAttr('disabled');
       $('#right').removeAttr('disabled');
@@ -260,13 +264,14 @@ $(function() {
     } else {
       started = false;
       controls.enabled = false;
-      $('#startstop').attr('value', 'start');
-      $('#pause').attr('disabled', true).attr('value', 'pause');
+      $('#startstop').val('start');
+      $('#pause').attr('disabled', true).val('pause');
       $('#jump').attr('disabled', true);
       $('.arm').each(function() { $(this).attr('disabled', true); });
+      $('#left-arm').val('緑腕↓');
+      $('#red-arm').val('赤腕↓');
       $('#right').removeAttr('disabled');
       $('#viewport').children().remove();
-      $('body').off('keydown');
       $('#controls input').removeAttr('disabled');
     }
   });
@@ -277,7 +282,7 @@ $(function() {
       scene.simulate(undefined, 1);
     }
     paused = !paused;
-    $(this).attr('value', paused ? 'resume' : 'pause');
+    $(this).val(paused ? 'resume' : 'pause');
   });
 
   $('#jump').click(function() {
@@ -288,7 +293,9 @@ $(function() {
   $('.arm').click(function() {
     var up = $(this).hasClass('up');
     $(this).toggleClass('up');
-    if ( $(this).hasClass('left') ) {
+    $(this).val(
+      ($(this).hasClass('green') ? '緑腕' : '赤腕') + (up ? '↑' :'↓'));
+    if ( $(this).hasClass('green') ) {
       arm_constraints[1].enableAngularMotor(1000, (up ? 1 : -1) * 500);
     } else {
       arm_constraints[0].enableAngularMotor(1000, (up ? -1 : 1) * 500);
