@@ -7,8 +7,8 @@ path = '/' + path.join('/');
 Physijs.scripts.worker = path + '/js/physijs_worker.js';
 Physijs.scripts.ammo = path + '/js/ammo.js';
 
-var started, paused, count, controls, boxes, arm_constraints,
-    jumptime, hineritime,
+var started, paused, count, controls, arm_constraints,
+    jumptime,
     box_material, red_material, green_material,
     projector, renderer, scene, ground, wall, camera, bottom;
 
@@ -49,7 +49,6 @@ function init() {
   count = 0;
   paused = false;
   jumptime = -1000;
-  hineritime = -1000;
 
   var webgl = $('#gl').attr('checked') != null;
   if ( webgl ) {
@@ -113,11 +112,11 @@ function init() {
   if ( $('#wall').attr('checked') != null )
     scene.add(wall);
 
-  var box, constraint,
+  var box, boxes = [], constraint,
       haba = Number($('#haba').val()),
       okuyuki = Number($('#okuyuki').val()),
       takasa = 5, space = 1;
-  boxes = [];
+
   for ( var i = 0; i < 5; i++ ) {
     box = new Physijs.BoxMesh(
       new THREE.CubeGeometry(haba, takasa, okuyuki), box_material);
@@ -194,7 +193,10 @@ function applyForce() {
       offset;
 
   ++count;
-  if ( count > jumptime && count < jumptime + 23 ) {
+  if ( count <= jumptime || count >= jumptime + 23 )
+    return;
+
+  if ( $('#twist').attr('checked') == null ) {
     if ( $('#grav').attr('checked') != null ) {
       effect = new THREE.Vector3(0,1,0).multiplyScalar(2500);
       offset = new THREE.Vector3(0,0,0)
@@ -205,7 +207,7 @@ function applyForce() {
       bottom.applyImpulse(effect, offset);
       bottom.applyImpulse(effect.negate(), offset.negate());
     }
-  } else if ( count > hineritime && count < hineritime + 23 ) {
+  } else {
     if ( $('#grav').attr('checked') != null ) {
       effect = new THREE.Vector3(0,1,0).multiplyScalar(2500);
       offset = new THREE.Vector3(0,0,0)
@@ -225,23 +227,7 @@ function applyForce() {
     }
   }
   return;
-
-  if ( ++count > 20 ) {
-    return;
-  }
-
-  offset = new THREE.Vector3(5,-18,-2)
-  bottom.applyImpulse(effect, offset);
-  bottom.applyImpulse(effect.negate(), offset.negate());
 };
-
-function doJump(notwist) {
-  if ( notwist ) {
-    jumptime = count + 10;
-  } else {
-    hineritime = count + 10;
-  }
-}
 
 $(function() {
   started = false;
@@ -287,7 +273,7 @@ $(function() {
 
   $('#jump').click(function() {
     $(this).attr('disabled', true);
-    doJump($('#twist').attr('checked') == null);
+    jumptime = count + 10;
   });
 
   $('.arm').click(function() {
