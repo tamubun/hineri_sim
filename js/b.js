@@ -7,42 +7,40 @@ path = '/' + path.join('/');
 Physijs.scripts.worker = path + '/js/physijs_worker.js';
 Physijs.scripts.ammo = path + '/js/ammo.js';
 
-var started, paused, count, controls, arm_constraints,
-    jumptime,
-    box_material, red_material, green_material,
+var started, paused, count, controls, arm_constraints, jumptime,
+    box_material, red_material, green_material, head_material,
     projector, renderer, scene, ground, wall, camera, bottom;
 
 function initGlobal() {
   projector = new THREE.Projector;
 
   // Materials
-  var ground_material = Physijs.createMaterial(
-    new THREE.MeshLambertMaterial(),
-      .8, // high friction
-      .4  // low restitution
-  );
-
   box_material = Physijs.createMaterial(new THREE.MeshLambertMaterial(
-    {color:0x3300cc}));
+    {color:0x3300cc, overdraw: 0.5}));
+  head_material = Physijs.createMaterial(new THREE.MeshLambertMaterial(
+    {vertexColors: THREE.FaceColors, overdraw: 0.5}));
   red_material = Physijs.createMaterial(new THREE.MeshLambertMaterial(
-    {color:0xff5500}));
+    {color:0xff5500, overdraw: 0.5}));
   green_material = Physijs.createMaterial(new THREE.MeshLambertMaterial(
-    {color:0x55ff00}));
-
-  var wall_material = new THREE.MeshBasicMaterial(
-    {color: 0x550000, transparent: true, opacity: 0.3});
+    {color:0x55ff00, overdraw: 0.5}));
 
   // Ground
   ground = new Physijs.BoxMesh(
     new THREE.CubeGeometry(100, 1, 100),
-    ground_material,
+    Physijs.createMaterial(
+      new THREE.MeshLambertMaterial({color:0x555555, overdraw: 0.5}),
+        .8, // high friction
+        .4  // low restitution
+    ),
     0 // mass
   );
   ground.position.set(0, -50, 0);
   ground.receiveShadow = true;
 
-  var wall_geometry = new THREE.CubeGeometry(0.1, 300, 100);
-  wall = new THREE.Mesh(wall_geometry, wall_material);
+  wall = new THREE.Mesh(
+    new THREE.CubeGeometry(0.1, 300, 100),
+    new THREE.MeshBasicMaterial(
+      {color: 0x550000, transparent: true, opacity: 0.3}));
 }
 
 function init() {
@@ -107,7 +105,8 @@ function init() {
     light.shadowDarkness = .7;
   }
   scene.add(light);
-
+  light = new THREE.AmbientLight(0x808080);
+  scene.add(light);
   scene.add(ground);
   if ( $('#wall').attr('checked') != null )
     scene.add(wall);
@@ -118,8 +117,29 @@ function init() {
       takasa = 5, space = 1;
 
   for ( var i = 0; i < 5; i++ ) {
-    box = new Physijs.BoxMesh(
-      new THREE.CubeGeometry(haba, takasa, okuyuki), box_material);
+    var cube = new THREE.CubeGeometry(haba, takasa, okuyuki);
+    if ( i == 4 ) {
+      var c;
+      for ( var j = 0; j < 12; ++j ) {
+        switch (j) {
+        case 4:
+        case 5:
+          c = 0x000000; break;
+        case 10:
+        case 11:
+          c = ($('#front').attr('checked') != null)? 0xffff00: 0x000000; break;
+        case 8:
+        case 9:
+          c = ($('#front').attr('checked') == null)? 0xffff00: 0x000000; break;
+        default:
+          c = 0x3300cc; break;
+        }
+        cube.faces[j].color.setHex(c);
+      }
+      box = new Physijs.BoxMesh(cube, head_material);
+    } else {
+      box = new Physijs.BoxMesh(cube, box_material);
+    }
     box.position.set(0, -35+i*(takasa+space), 0);
     box.castShadow = true;
     if ( i == 3 && $('#arch').attr('checked') != null )

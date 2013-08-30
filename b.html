@@ -13,6 +13,7 @@
 
 <body>
 <div style="position: absolute; z-index:10; width: 95%;">
+  <H1>捻りシミュレーター(ブラウザ版)</H1>
   <div>
     <input id="startstop" type="button" value="start" />
     <input id="pause" type="button" value="pause" disabled="true"/>
@@ -29,6 +30,7 @@
       <input id="grav" type="checkbox">重力</input>
       <input id="arch" type="checkbox">反り</input>
       <input id="arm" type="checkbox">腕</input>
+      <input id="front" type="checkbox">前宙</input>
       <input id="twist" type="checkbox">ジャンプ時に捻りトルク追加</input>
     </div>
     <div>
@@ -37,6 +39,7 @@
     </div>
   </div>
   <p>左、中、右マウスクリックで視点を移動できます。</p>
+  <p>前宙は顔の向きが違うだけです。</p>
   <p>動作がおかしくなったときはページを読み込み直して下さい</p>
 </div>
 <div id="viewport"></div>
