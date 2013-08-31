@@ -14,33 +14,54 @@
 <body>
 <div style="position: absolute; z-index:10; width: 95%;">
   <H1>捻りシミュレーター(ブラウザ版)</H1>
-  <div>
-    <input id="startstop" type="button" value="start" />
-    <input id="pause" type="button" value="pause" disabled="true"/>
-    <input id="jump" type="button" value="回転/ジャンプ" disabled="true"/>
-    <input id="left-arm" type="button" value="緑腕↓" class="arm green up" disabled="true"/>
-    <input id="red-arm" type="button" value="赤腕↓" class="arm up" disabled="true"/>
-  </div>
-  <div id='controls'>
-    <div>
-      <label>幅</label> <input id="haba" type="number" value="7" />
-      <label>奥行き</label><input id="okuyuki" type="number" value="4" />
-    </div>
-    <div>
-      <input id="grav" type="checkbox">重力</input>
-      <input id="arch" type="checkbox">反り</input>
-      <input id="arm" type="checkbox">腕</input>
-      <input id="front" type="checkbox">前宙</input>
-      <input id="twist" type="checkbox">ジャンプ時に捻りトルク追加</input>
-    </div>
-    <div>
-      <input id="gl" type="checkbox">WebGL</input>
-      <input id="wall" type="checkbox">鉛直面</input>
-    </div>
-  </div>
-  <p>左、中、右マウスクリックで視点を移動できます。</p>
-  <p>前宙は顔の向きが違うだけです。</p>
-  <p>動作がおかしくなったときはページを読み込み直して下さい</p>
+  <table border="1" cellpadding="10">
+  <tbody>
+    <tr id='controls'>
+      <th>設定</th>
+      <td>
+        <div>
+        <label>幅</label> <input id="haba" type="number" value="7" />
+        <label>奥行き</label><input id="okuyuki" type="number" value="4" />
+        </div>
+	<div>
+        <input id="grav" type="checkbox" checked="true">重力</input>
+        <input id="arch" type="checkbox" checked="true">反り</input>
+        <input id="arm" type="checkbox">腕</input>
+        <input id="front" type="checkbox">前宙</input>
+        <input id="twist" type="checkbox">ジャンプ時に捻りトルク追加</input>
+	</div>
+	<div>
+        <input id="gl" type="checkbox">WebGL</input>
+        <input id="wall" type="checkbox">鉛直面</input>
+	</div>
+      </td>
+    </tr>
+    <tr>
+      <th>操作</th>
+      <td>
+        <input id="startstop" type="button" value="start" />
+        <input id="pause" type="button" value="pause" disabled="true"/>
+        <input id="jump" type="button" value="回転/ジャンプ" disabled="true"/>
+        <input id="left-arm" type="button" value="緑腕↓" class="arm green up" disabled="true"/>
+        <input id="red-arm" type="button" value="赤腕↓" class="arm up" disabled="true"/>
+      </td>
+    </tr>
+  </tbody>
+  </table>
+  <ul>
+  <li>startを押したあとは、左、中、右マウスクリックで視点を移動できます。</li>
+  <li>地面に着く前にも跳べますが、着く時にタイミングを合わせて<br />
+  「回転/ジャンプ」を押すと反動で高く跳びます(その代わりバランスを崩します)。</li>
+  <li>前宙は顔の向きが違うだけです。</li>
+  </ul>
+  <ul>
+  <li>WebGLをチェックすると、PC環境によっては実行できなくなります。</li>
+  <li>物理的な内容の説明については<a href="http://bunysmc.exblog.jp/20459663/">角運動量の保存則と回転のエネルギー</a>から始まる<br />
+ 一連の記事に書いてます。本体は、<a href="http://bunysmc.exblog.jp/20585698/">円柱の自由回転と伸身宙返り</a>です。</li>
+  </ul>
+  <ul>
+  <li>動作がおかしくなったときはページを読み込み直して下さい</li>
+  </ul>
 </div>
 <div id="viewport"></div>
 </body>
