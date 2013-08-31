@@ -1,11 +1,12 @@
 'use strict';
 
 var path = location.pathname.split("/");
-path.shift();
 path.pop();
-path = '/' + path.join('/');
-Physijs.scripts.worker = path + '/js/physijs_worker.js';
-Physijs.scripts.ammo = path + '/js/ammo.js';
+path.push('js/physijs_worker.js');
+Physijs.scripts.worker = path.join('/');
+path.pop();
+path.push('js/ammo.js');
+Physijs.scripts.ammo = path.join('/');
 
 var started, paused, count, controls, arm_constraints, jumptime,
     box_material, red_material, green_material, head_material,
@@ -105,7 +106,7 @@ function init() {
     light.shadowDarkness = .7;
   }
   scene.add(light);
-  light = new THREE.AmbientLight(0x808080);
+  light = new THREE.AmbientLight(0x404040);
   scene.add(light);
   scene.add(ground);
   if ( $('#wall').attr('checked') != null )
@@ -118,7 +119,7 @@ function init() {
 
   for ( var i = 0; i < 5; i++ ) {
     var cube = new THREE.CubeGeometry(haba, takasa, okuyuki);
-    if ( i == 4 ) {
+    if ( i === 4 ) {
       var c;
       for ( var j = 0; j < 12; ++j ) {
         switch (j) {
@@ -140,29 +141,29 @@ function init() {
     } else {
       box = new Physijs.BoxMesh(cube, box_material);
     }
-    box.position.set(0, -35+i*(takasa+space), 0);
+    box.position.set(0, -35+i*(takasa+space), -10);
     box.castShadow = true;
-    if ( i == 3 && $('#arch').attr('checked') != null )
+    if ( i === 3 && $('#arch').attr('checked') != null )
       box.position.z -= 0.1 * okuyuki;
-    else if ( i == 4 && $('#arch').attr('checked') != null )
+    else if ( i === 4 && $('#arch').attr('checked') != null )
       box.position.z -= 0.35 * okuyuki;
     boxes.push(box);
     scene.add(box);
 
-    if ( i == 0 )
+    if ( i === 0 )
       continue;
 
     constraint = new Physijs.HingeConstraint(
       box,
       boxes[i-1],
-      new THREE.Vector3(0, box.position.y - 0.5*(takasa+space),0),
+      new THREE.Vector3(0, box.position.y - 0.5*(takasa+space),-10),
       new THREE.Vector3(1, 0, 0)
     );
     scene.addConstraint(constraint);
     constraint = new Physijs.HingeConstraint(
       box,
       boxes[i-1],
-      new THREE.Vector3(0, i*(takasa+1)-13, 0),
+      new THREE.Vector3(0, i*(takasa+1)-13, -10),
       new THREE.Vector3(0, 0, 1)
     );
     scene.addConstraint(constraint);
@@ -174,9 +175,9 @@ function init() {
     for ( var i = 0; i < 2; ++i ) {
       box = new Physijs.BoxMesh(
         new THREE.CubeGeometry(0.2*haba, 1.8 * takasa, 0.2*haba),
-        i == 0 ? red_material : green_material);
+        i === 0 ? red_material : green_material);
       box.position.set(
-        boxes[3].position.x + (i == 0 ? 1 : -1) * 0.7 * haba,
+        boxes[3].position.x + (i === 0 ? 1 : -1) * 0.7 * haba,
         boxes[3].position.y + takasa,
         boxes[3].position.z);
       box.castShadow = true;
@@ -185,13 +186,13 @@ function init() {
         box,
         boxes[3],
         new THREE.Vector3(
-          boxes[3].position.x + (i == 0 ? 1 : -1) * 0.65 * haba,
+          boxes[3].position.x + (i === 0 ? 1 : -1) * 0.65 * haba,
           boxes[3].position.y,
           boxes[3].position.z),
         new THREE.Vector3(0, 0, 1)
       );
       scene.addConstraint(constraint);
-      constraint.enableAngularMotor(1000, (i == 0 ? 1 : -1) * 500);
+      constraint.enableAngularMotor(1000, (i === 0 ? 1 : -1) * 500);
       arm_constraints.push(constraint);
     }
   }
