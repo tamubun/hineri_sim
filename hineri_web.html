@@ -26,7 +26,7 @@
 	<div>
         <input id="grav" type="checkbox" checked="true">重力</input>
         <input id="arch" type="checkbox" checked="true">反り</input>
-        <input id="arm" type="checkbox">腕</input>
+        <input id="arm" type="checkbox" checked="true">腕</input>
         <input id="front" type="checkbox">前宙</input>
         <input id="twist" type="checkbox">ジャンプ時に捻りトルク追加</input>
 	</div>
@@ -51,7 +51,11 @@
   <ul>
   <li>startを押したあとは、左、中、右マウスクリックで視点を移動できます。</li>
   <li>地面に着く前にも跳べますが、着く時にタイミングを合わせて<br />
-  「回転/ジャンプ」を押すと反動で高く跳びます(その代わりバランスを崩します)。</li>
+  「回転/ジャンプ」を押すと反動で高く跳びます(でもまっすぐ蹴れません ; ;)。<br />
+  この時、反っていると宙返りになります。<br />
+  プログラム都合により、宙返り中に反りを戻すことは出来ません。
+</li>
+  <li>重力なしの時は、回転ボタンを押すと、回転用のトルクが加わり宙返りします。</li>
   <li>前宙は顔の向きが違うだけです。</li>
   </ul>
   <ul>
