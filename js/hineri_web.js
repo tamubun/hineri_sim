@@ -215,7 +215,7 @@ function applyForce() {
 
   if ( $('#twist').attr('checked') == null ) {
     if ( $('#grav').attr('checked') != null ) {
-      effect = new THREE.Vector3(0,1,0).multiplyScalar(2500);
+      effect = new THREE.Vector3(0,1,0).multiplyScalar(2700);
       offset = new THREE.Vector3(0,0,0)
       bottom.applyImpulse(effect, offset);
     } else {
@@ -226,7 +226,7 @@ function applyForce() {
     }
   } else {
     if ( $('#grav').attr('checked') != null ) {
-      effect = new THREE.Vector3(0,1,0).multiplyScalar(2500);
+      effect = new THREE.Vector3(0,1,0).multiplyScalar(2700);
       offset = new THREE.Vector3(0,0,0)
       bottom.applyImpulse(effect, offset);
       effect = new THREE.Vector3(0,0,1).multiplyScalar(150);
