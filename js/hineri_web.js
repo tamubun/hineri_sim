@@ -53,8 +53,6 @@ function initGlobal() {
       {color: 0x550000, transparent: true, opacity: 0.3}));
 
   scene = new Physijs.Scene;
-  scene.setGravity(
-    new THREE.Vector3(0, $('#grav').attr('checked') != null ? -30 : 0, 0));
   scene.addEventListener(
     'update',
     function() {
@@ -97,9 +95,6 @@ function initGlobal() {
   scene.add(light);
   light = new THREE.AmbientLight(0x404040);
   scene.add(light);
-  scene.add(ground);
-  if ( $('#wall').attr('checked') != null )
-    scene.add(wall);
 
   var box, constraint,
       haba = Number($('#haba').val()),
@@ -132,31 +127,48 @@ function initGlobal() {
     } else {
       box = new Physijs.BoxMesh(cube, box_material);
     }
-    box.position.set(0, -35+i*(takasa+space), -10);
     box.castShadow = true;
-    if ( i === 3 && $('#arch').attr('checked') != null )
-      box.position.z -= 0.1 * okuyuki;
-    else if ( i === 4 && $('#arch').attr('checked') != null )
-      box.position.z -= 0.35 * okuyuki;
     boxes.push(box);
   }
   bottom = boxes[0];
 }
 
 function init() {
-  var one = new THREE.Vector3(1,1,1);
+  var one = new THREE.Vector3(1,1,1),
+      box, constraint,
+      haba = Number($('#haba').val()),
+      okuyuki = Number($('#okuyuki').val()),
+      takasa = 5, space = 1;
 
   count = 0;
   paused = false;
   jumptime = -1000;
 
-  for ( var i = 0, len = boxes.length; i < len; ++i ) {
-    var box = boxes[i];
-    scene.add(box);
-    box.setLinearFactor(one);
-    box.setAngularFactor(one);
+  scene.setGravity(
+    new THREE.Vector3(0, $('#grav').attr('checked') != null ? -30 : 0, 0));
+
+  for ( var i = 0; i < 5; i++ ) {
+    box = boxes[i];
+    box.position.set(0, -35+i*(takasa+space), -10);
+    if ( i === 3 && $('#arch').attr('checked') != null )
+      box.position.z -= 0.1 * okuyuki;
+    else if ( i === 4 && $('#arch').attr('checked') != null )
+      box.position.z -= 0.35 * okuyuki;
+    box.rotation.set(0,0,0);
   }
 
+  for ( var i = 0, len = boxes.length; i < len; ++i ) {
+    var box = boxes[i];
+    box.setLinearFactor(one);
+    box.setAngularFactor(one);
+    scene.add(box);
+  }
+
+  scene.add(ground);
+  if ( $('#wall').attr('checked') != null )
+    scene.add(wall);
+
+  controls.enabled = true;
   requestAnimationFrame(render);
   scene.simulate();
 };
@@ -167,12 +179,17 @@ function reset() {
 
   for ( var i = 0, len = boxes.length; i < len; ++i ) {
     box = boxes[i];
-    box.setLinearFactor(zero);
     box.setAngularFactor(zero);
-    box.setLinearVelocity(zero);
     box.setAngularVelocity(zero);
+    box.setLinearFactor(zero);
+    box.setLinearVelocity(zero);
     scene.remove(box);
   }
+  scene.remove(ground);
+  if ( $('#wall').attr('checked') != null )
+    scene.remove(wall);
+
+  renderer.render(scene, camera);
 };
 
 function render() {
