@@ -9,11 +9,20 @@ path.push('js/ammo.js');
 Physijs.scripts.ammo = path.join('/');
 
 var started, paused, count, controls, arm_constraints, jumptime,
+    boxes, constraints,
     box_material, red_material, green_material, head_material,
-    projector, renderer, scene, ground, wall, camera, bottom;
+    renderer, scene, ground, wall, camera, bottom;
 
 function initGlobal() {
-  projector = new THREE.Projector;
+  var webgl = $('#gl').attr('checked') != null;
+  if ( webgl ) {
+    renderer = new THREE.WebGLRenderer();
+    renderer.shadowMapEnabled = true;
+  } else {
+    renderer = new THREE.CanvasRenderer();
+  }
+  renderer.setSize(window.innerWidth*0.95, window.innerHeight*0.95);
+  $('#viewport').append(renderer.domElement);
 
   // Materials
   box_material = Physijs.createMaterial(new THREE.MeshLambertMaterial(
@@ -42,22 +51,6 @@ function initGlobal() {
     new THREE.CubeGeometry(0.1, 300, 100),
     new THREE.MeshBasicMaterial(
       {color: 0x550000, transparent: true, opacity: 0.3}));
-}
-
-function init() {
-  count = 0;
-  paused = false;
-  jumptime = -1000;
-
-  var webgl = $('#gl').attr('checked') != null;
-  if ( webgl ) {
-    renderer = new THREE.WebGLRenderer();
-    renderer.shadowMapEnabled = true;
-  } else {
-    renderer = new THREE.CanvasRenderer();
-  }
-  renderer.setSize(window.innerWidth*0.95, window.innerHeight*0.95);
-  $('#viewport').append(renderer.domElement);
 
   scene = new Physijs.Scene;
   scene.setGravity(
@@ -108,11 +101,13 @@ function init() {
   if ( $('#wall').attr('checked') != null )
     scene.add(wall);
 
-  var box, boxes = [], constraint,
+  var box, constraint,
       haba = Number($('#haba').val()),
       okuyuki = Number($('#okuyuki').val()),
       takasa = 5, space = 1;
 
+  boxes = [];
+  constraints = [];
   for ( var i = 0; i < 5; i++ ) {
     var cube = new THREE.CubeGeometry(haba, takasa, okuyuki);
     if ( i === 4 ) {
@@ -144,57 +139,40 @@ function init() {
     else if ( i === 4 && $('#arch').attr('checked') != null )
       box.position.z -= 0.35 * okuyuki;
     boxes.push(box);
-    scene.add(box);
-
-    if ( i === 0 )
-      continue;
-
-    constraint = new Physijs.HingeConstraint(
-      box,
-      boxes[i-1],
-      new THREE.Vector3(0, box.position.y - 0.5*(takasa+space),-10),
-      new THREE.Vector3(1, 0, 0)
-    );
-    scene.addConstraint(constraint);
-    constraint = new Physijs.HingeConstraint(
-      box,
-      boxes[i-1],
-      new THREE.Vector3(0, i*(takasa+1)-13, -10),
-      new THREE.Vector3(0, 0, 1)
-    );
-    scene.addConstraint(constraint);
   }
   bottom = boxes[0];
+}
 
-  arm_constraints = [];
-  if ( $('#arm').attr('checked') != null ) {
-    for ( var i = 0; i < 2; ++i ) {
-      box = new Physijs.BoxMesh(
-        new THREE.CubeGeometry(0.2*haba, 1.8 * takasa, 0.2*haba),
-        i === 0 ? red_material : green_material);
-      box.position.set(
-        boxes[3].position.x + (i === 0 ? 1 : -1) * 0.7 * haba,
-        boxes[3].position.y + takasa,
-        boxes[3].position.z);
-      box.castShadow = true;
-      scene.add(box);
-      constraint = new Physijs.HingeConstraint(
-        box,
-        boxes[3],
-        new THREE.Vector3(
-          boxes[3].position.x + (i === 0 ? 1 : -1) * 0.65 * haba,
-          boxes[3].position.y,
-          boxes[3].position.z),
-        new THREE.Vector3(0, 0, 1)
-      );
-      scene.addConstraint(constraint);
-      constraint.enableAngularMotor(1000, (i === 0 ? 1 : -1) * 500);
-      arm_constraints.push(constraint);
-    }
+function init() {
+  var one = new THREE.Vector3(1,1,1);
+
+  count = 0;
+  paused = false;
+  jumptime = -1000;
+
+  for ( var i = 0, len = boxes.length; i < len; ++i ) {
+    var box = boxes[i];
+    scene.add(box);
+    box.setLinearFactor(one);
+    box.setAngularFactor(one);
   }
 
   requestAnimationFrame(render);
   scene.simulate();
+};
+
+function reset() {
+  var box, constraint,
+      zero = new THREE.Vector3(0,0,0);
+
+  for ( var i = 0, len = boxes.length; i < len; ++i ) {
+    box = boxes[i];
+    box.setLinearFactor(zero);
+    box.setAngularFactor(zero);
+    box.setLinearVelocity(zero);
+    box.setAngularVelocity(zero);
+    scene.remove(box);
+  }
 };
 
 function render() {
@@ -267,6 +245,7 @@ $(function() {
     } else {
       started = false;
       controls.enabled = false;
+      reset();
       $('#startstop').val('start');
       $('#pause').attr('disabled', true).val('pause');
       $('#jump').attr('disabled', true);
@@ -274,7 +253,6 @@ $(function() {
       $('#left-arm').val('緑腕↓');
       $('#red-arm').val('赤腕↓');
       $('#right').removeAttr('disabled');
-      $('#viewport').children().remove();
       $('#controls input').removeAttr('disabled');
     }
   });
