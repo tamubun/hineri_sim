@@ -170,7 +170,7 @@ function init() {
 
   controls.enabled = true;
   requestAnimationFrame(render);
-  scene.simulate();
+  scene.simulate(undefined, 1);
 };
 
 function reset() {
