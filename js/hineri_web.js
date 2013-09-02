@@ -206,8 +206,9 @@ function render() {
 };
 
 function applyForce() {
-  var effect,
-      offset;
+  var effect, offset,
+      kick = Number($('#kick').val()),
+      torque = Number($('#torque').val());
 
   ++count;
   if ( count <= jumptime || count >= jumptime + 23 )
@@ -215,7 +216,7 @@ function applyForce() {
 
   if ( $('#twist').attr('checked') == null ) {
     if ( $('#grav').attr('checked') != null ) {
-      effect = new THREE.Vector3(0,1,0).multiplyScalar(2700);
+      effect = new THREE.Vector3(0,1,0).multiplyScalar(kick);
       offset = new THREE.Vector3(0,0,0)
       bottom.applyImpulse(effect, offset);
     } else {
@@ -226,18 +227,18 @@ function applyForce() {
     }
   } else {
     if ( $('#grav').attr('checked') != null ) {
-      effect = new THREE.Vector3(0,1,0).multiplyScalar(2700);
+      effect = new THREE.Vector3(0,1,0).multiplyScalar(kick);
       offset = new THREE.Vector3(0,0,0)
       bottom.applyImpulse(effect, offset);
-      effect = new THREE.Vector3(0,0,1).multiplyScalar(150);
+      effect = new THREE.Vector3(0,0,1).multiplyScalar(torque);
       offset = new THREE.Vector3(1,0,0)
       bottom.applyImpulse(effect, offset);
       bottom.applyImpulse(effect.negate(), offset.negate());
     } else {
-      effect = new THREE.Vector3(0,0,1).multiplyScalar(80);
+      effect = new THREE.Vector3(0,0,1).multiplyScalar(120);
       offset = new THREE.Vector3(0,-10,0)
       bottom.applyImpulse(effect, offset);
-      effect = new THREE.Vector3(0,0,1).multiplyScalar(100);
+      effect = new THREE.Vector3(0,0,1).multiplyScalar(torque);
       offset = new THREE.Vector3(1,0,0)
       bottom.applyImpulse(effect, offset);
       bottom.applyImpulse(effect.negate(), offset.negate());
