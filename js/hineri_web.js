@@ -159,12 +159,13 @@ function init() {
 
   for ( var i = 0, len = boxes.length; i < len; ++i ) {
     var box = boxes[i];
+    scene.add(box);
     box.setLinearFactor(one);
     box.setAngularFactor(one);
-    scene.add(box);
   }
 
   scene.add(ground);
+
   if ( $('#wall').attr('checked') != null )
     scene.add(wall);
 
@@ -186,6 +187,7 @@ function reset() {
     scene.remove(box);
   }
   scene.remove(ground);
+
   if ( $('#wall').attr('checked') != null )
     scene.remove(wall);
 
