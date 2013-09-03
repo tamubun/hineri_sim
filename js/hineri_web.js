@@ -11,18 +11,16 @@ Physijs.scripts.ammo = path.join('/');
 var started, paused, count, controls, arm_constraints, jumptime,
     boxes, constraints,
     box_material, red_material, green_material, head_material,
-    renderer, scene, ground, wall, camera, bottom;
+    renderer, gl_rend, canvas_rend, scene, ground, wall, camera, bottom;
 
 function initGlobal() {
-  var webgl = $('#gl').attr('checked') != null;
-  if ( webgl ) {
-    renderer = new THREE.WebGLRenderer();
-    renderer.shadowMapEnabled = true;
-  } else {
-    renderer = new THREE.CanvasRenderer();
-  }
-  renderer.setSize(window.innerWidth*0.95, window.innerHeight*0.95);
-  $('#viewport').append(renderer.domElement);
+  // Renderers
+  gl_rend = new THREE.WebGLRenderer();
+  gl_rend.shadowMapEnabled = true;
+  gl_rend.setSize(window.innerWidth*0.95, window.innerHeight*0.95);
+  canvas_rend = new THREE.CanvasRenderer();
+  canvas_rend.setSize(window.innerWidth*0.95, window.innerHeight*0.95);
+  renderer = null;
 
   // Materials
   box_material = Physijs.createMaterial(new THREE.MeshLambertMaterial(
@@ -84,14 +82,12 @@ function initGlobal() {
   var light = new THREE.DirectionalLight(0xFFFFFF);
   light.position.set(20, 40, 35);
   light.target.position.copy(scene.position);
-  if ( webgl ) {
-    light.castShadow = true;
-    light.shadowCameraLeft = -60;
-    light.shadowCameraTop = -60;
-    light.shadowCameraRight = 60;
-    light.shadowCameraBottom = 60;
-    light.shadowDarkness = .7;
-  }
+  light.castShadow = true;
+  light.shadowCameraLeft = -60;
+  light.shadowCameraTop = -60;
+  light.shadowCameraRight = 60;
+  light.shadowCameraBottom = 60;
+  light.shadowDarkness = .7;
   scene.add(light);
   light = new THREE.AmbientLight(0x404040);
   scene.add(light);
@@ -133,6 +129,22 @@ function initGlobal() {
 }
 
 function init() {
+  if ( $('#gl').attr('checked') != null ) {
+    if ( renderer !== gl_rend ) {
+      if ( renderer != null )
+        $('#viewport').children().remove();
+      renderer = gl_rend;
+      $('#viewport').append(renderer.domElement);
+    }
+  } else {
+    if ( renderer !== canvas_rend ) {
+      if ( renderer != null )
+        $('#viewport').children().remove();
+      renderer = canvas_rend;
+      $('#viewport').append(renderer.domElement);
+    }
+  }
+
   var one = new THREE.Vector3(1,1,1),
       box, constraint,
       haba = Number($('#haba').val()),
@@ -163,7 +175,7 @@ function init() {
     box.setLinearFactor(one);
     box.setAngularFactor(one);
 
-    if ( i == 0 )
+    if ( i === 0 )
       continue;
 
     var constraint = new Physijs.HingeConstraint(
