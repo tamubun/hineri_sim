@@ -96,13 +96,12 @@ function initGlobal() {
   light = new THREE.AmbientLight(0x404040);
   scene.add(light);
 
-  var box, constraint,
+  var box,
       haba = Number($('#haba').val()),
       okuyuki = Number($('#okuyuki').val()),
       takasa = 5, space = 1;
 
   boxes = [];
-  constraints = [];
   for ( var i = 0; i < 5; i++ ) {
     var cube = new THREE.CubeGeometry(haba, takasa, okuyuki);
     if ( i === 4 ) {
@@ -157,11 +156,32 @@ function init() {
     box.rotation.set(0,0,0);
   }
 
+  constraints = [];
   for ( var i = 0, len = boxes.length; i < len; ++i ) {
     var box = boxes[i];
     scene.add(box);
     box.setLinearFactor(one);
     box.setAngularFactor(one);
+
+    if ( i == 0 )
+      continue;
+
+    var constraint = new Physijs.HingeConstraint(
+      box,
+      boxes[i-1],
+      new THREE.Vector3(0, box.position.y - 0.5*(takasa+space),-10),
+      new THREE.Vector3(1, 0, 0)
+    );
+    scene.addConstraint(constraint);
+    constraints.push(constraint);
+    constraint = new Physijs.HingeConstraint(
+      box,
+      boxes[i-1],
+      new THREE.Vector3(0, i*(takasa+1)-13, -10),
+      new THREE.Vector3(0, 0, 1)
+    );
+    scene.addConstraint(constraint);
+    constraints.push(constraint);
   }
 
   scene.add(ground);
@@ -177,6 +197,10 @@ function init() {
 function reset() {
   var box, constraint,
       zero = new THREE.Vector3(0,0,0);
+
+  for ( var i = 0, len = constraints.length; i < len; ++i ) {
+    scene.removeConstraint(constraints[i]);
+  }
 
   for ( var i = 0, len = boxes.length; i < len; ++i ) {
     box = boxes[i];
