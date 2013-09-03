@@ -10,7 +10,7 @@ Physijs.scripts.ammo = path.join('/');
 
 var started, paused, count, controls, arm_constraints, jumptime,
     boxes, constraints,
-    box_material, red_material, green_material, head_material,
+    box_material, red_material, green_material, head_material, head_material2,
     renderer, gl_rend, canvas_rend, scene, ground, wall, camera, bottom;
 
 function initGlobal() {
@@ -23,20 +23,29 @@ function initGlobal() {
   renderer = null;
 
   // Materials
-  box_material = Physijs.createMaterial(new THREE.MeshLambertMaterial(
-    {color:0x3300cc, overdraw: 0.5}));
-  head_material = Physijs.createMaterial(new THREE.MeshLambertMaterial(
-    {vertexColors: THREE.FaceColors, overdraw: 0.5}));
+  var blue_material =
+    new THREE.MeshLambertMaterial({color:0x3300cc, overdraw: true});
+  var black_material =
+    new THREE.MeshLambertMaterial({color:0x000000, overdraw: true});
+  var face_material =
+    new THREE.MeshLambertMaterial({color:0xffff00, overdraw: true});  
+  box_material = Physijs.createMaterial(blue_material);
+  head_material = Physijs.createMaterial(new THREE.MeshFaceMaterial(
+    [blue_material, black_material, black_material,
+     black_material, face_material, black_material]));
+  head_material2 = Physijs.createMaterial(new THREE.MeshFaceMaterial(
+    [blue_material, black_material, black_material,
+     black_material, black_material, face_material]));
   red_material = Physijs.createMaterial(new THREE.MeshLambertMaterial(
-    {color:0xff5500, overdraw: 0.5}));
+    {color:0xff5500, overdraw: true}));
   green_material = Physijs.createMaterial(new THREE.MeshLambertMaterial(
-    {color:0x55ff00, overdraw: 0.5}));
+    {color:0x55ff00, overdraw: true}));
 
   // Ground
   ground = new Physijs.BoxMesh(
     new THREE.CubeGeometry(100, 1, 100),
     Physijs.createMaterial(
-      new THREE.MeshLambertMaterial({color:0x555555, overdraw: 0.5}),
+      new THREE.MeshLambertMaterial({color:0x555555, overdraw: true}),
         .8, // high friction
         .4  // low restitution
     ),
@@ -91,41 +100,6 @@ function initGlobal() {
   scene.add(light);
   light = new THREE.AmbientLight(0x404040);
   scene.add(light);
-
-  var box,
-      haba = Number($('#haba').val()),
-      okuyuki = Number($('#okuyuki').val()),
-      takasa = 5, space = 1;
-
-  boxes = [];
-  for ( var i = 0; i < 5; i++ ) {
-    var cube = new THREE.CubeGeometry(haba, takasa, okuyuki);
-    if ( i === 4 ) {
-      var c;
-      for ( var j = 0; j < 12; ++j ) {
-        switch (j) {
-        case 4:
-        case 5:
-          c = 0x000000; break;
-        case 10:
-        case 11:
-          c = ($('#front').attr('checked') != null)? 0xffff00: 0x000000; break;
-        case 8:
-        case 9:
-          c = ($('#front').attr('checked') == null)? 0xffff00: 0x000000; break;
-        default:
-          c = 0x3300cc; break;
-        }
-        cube.faces[j].color.setHex(c);
-      }
-      box = new Physijs.BoxMesh(cube, head_material);
-    } else {
-      box = new Physijs.BoxMesh(cube, box_material);
-    }
-    box.castShadow = true;
-    boxes.push(box);
-  }
-  bottom = boxes[0];
 }
 
 function init() {
@@ -146,7 +120,7 @@ function init() {
   }
 
   var one = new THREE.Vector3(1,1,1),
-      box, constraint,
+      box, cube, constraint,
       haba = Number($('#haba').val()),
       okuyuki = Number($('#okuyuki').val()),
       takasa = 5, space = 1;
@@ -158,15 +132,28 @@ function init() {
   scene.setGravity(
     new THREE.Vector3(0, $('#grav').attr('checked') != null ? -30 : 0, 0));
 
+  boxes = [];
   for ( var i = 0; i < 5; i++ ) {
-    box = boxes[i];
+    cube = new THREE.CubeGeometry(haba, takasa, okuyuki);
+    if ( i !== 4 )
+      box = new Physijs.BoxMesh(cube, box_material);
+    else
+      box = new Physijs.BoxMesh(
+        cube,
+        $('#front').attr('checked') == null ? head_material : head_material2);
+    box.geometry.width = haba;
+    box.geometry.depth = okuyuki;
+    box.geometry.height = takasa;
     box.position.set(0, -35+i*(takasa+space), -10);
     if ( i === 3 && $('#arch').attr('checked') != null )
       box.position.z -= 0.1 * okuyuki;
     else if ( i === 4 && $('#arch').attr('checked') != null )
       box.position.z -= 0.35 * okuyuki;
     box.rotation.set(0,0,0);
+    box.castShadow = true;
+    boxes.push(box);
   }
+  bottom = boxes[0];
 
   constraints = [];
   for ( var i = 0, len = boxes.length; i < len; ++i ) {
