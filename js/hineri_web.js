@@ -8,8 +8,8 @@ path.pop();
 path.push('js/ammo.js');
 Physijs.scripts.ammo = path.join('/');
 
-var started, paused, count, controls, arm_constraints, jumptime,
-    boxes, constraints,
+var started, paused, count, controls, jumptime,
+    boxes, constraints, arm_constraints,
     box_material, red_material, green_material, head_material, head_material2,
     renderer, gl_rend, canvas_rend, scene, ground, wall, camera, bottom;
 
@@ -123,6 +123,7 @@ function init() {
       haba = Number($('#haba').val()),
       okuyuki = Number($('#okuyuki').val()),
       takasa = 5, space = 1,
+      len = ($('#arm').attr('checked') != null) ? 7 : 5,
       w,h,d,x,y,z,m;
 
   count = 0;
@@ -132,28 +133,39 @@ function init() {
   scene.setGravity(
     new THREE.Vector3(0, $('#grav').attr('checked') != null ? -30 : 0, 0));
 
+  scene.add(ground);
+  if ( $('#wall').attr('checked') != null )
+    scene.add(wall);
+
   boxes = [];
-  for ( var i = 0; i < 5; i++ ) {
+  for ( var i = 0; i < len; i++ ) {
     switch (i) {
-    case 3:
+    case 3: // 胸
       w = haba; h = takasa; d = okuyuki;
       x = 0; y = -35+i*(takasa+space); z = -10;
       if ( $('#arch').attr('checked') != null )
         z -= 0.1 * okuyuki;
       m = box_material;
       break;
-    case 4:
+    case 4: // 頭
       w = haba; h = takasa; d = okuyuki;
       x = 0; y = -35+i*(takasa+space); z = -10;
       if ( $('#arch').attr('checked') != null )
         z -= 0.35 * okuyuki;
       m = $('#front').attr('checked') == null ? head_material : head_material2;
       break;
+    case 5: // 腕
+    case 6:
+      w = 0.2 * haba; h = 1.8 * takasa; d = 0.2 * haba;
+      x = boxes[3].position.x + (i === 5 ? 1 : -1) * 0.7 * haba;
+      y = boxes[3].position.y + takasa;
+      z = boxes[3].position.z;
+      m = i == 5 ? red_material : green_material;
+      break;
     default:
       w = haba; h = takasa; d = okuyuki;
       x = 0; y = -35+i*(takasa+space); z = -10;
       m = box_material;
-      break;
     }
 
     box = new Physijs.BoxMesh(new THREE.CubeGeometry(w,h,d), m);
@@ -163,15 +175,14 @@ function init() {
   }
   bottom = boxes[0];
 
+  for ( var i = 0; i < len; ++i )
+    scene.add(boxes[i]);
+
   constraints = [];
-  for ( var i = 0, len = boxes.length; i < len; ++i ) {
-    var box = boxes[i];
-    scene.add(box);
-
-    if ( i === 0 )
-      continue;
-
-    var constraint = new Physijs.HingeConstraint(
+  arm_constraints = [];
+  for ( var i = 1; i < 5; ++i ) {
+    box = boxes[i];
+    constraint = new Physijs.HingeConstraint(
       box,
       boxes[i-1],
       new THREE.Vector3(0, box.position.y - 0.5*(takasa+space),-10),
@@ -189,10 +200,24 @@ function init() {
     constraints.push(constraint);
   }
 
-  scene.add(ground);
-
-  if ( $('#wall').attr('checked') != null )
-    scene.add(wall);
+  if ( $('#arm').attr('checked') != null ) {
+    for ( var i = 0; i < 2; ++i ) {
+      box = boxes[i+5];
+      constraint = new Physijs.HingeConstraint(
+        box,
+        boxes[3],
+        new THREE.Vector3(
+          boxes[3].position.x + (i === 0 ? 1 : -1) * 0.65 * haba,
+          boxes[3].position.y,
+          boxes[3].position.z),
+        new THREE.Vector3(0, 0, 1)
+      );
+      scene.addConstraint(constraint);
+      constraint.enableAngularMotor(1000, (i === 0 ? 1 : -1) * 500);
+      constraints.push(constraint);
+      arm_constraints.push(constraint);
+    }
+  }
 
   controls.enabled = true;
   requestAnimationFrame(render);
