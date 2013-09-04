@@ -28,7 +28,7 @@ function initGlobal() {
   var black_material =
     new THREE.MeshLambertMaterial({color:0x000000, overdraw: true});
   var face_material =
-    new THREE.MeshLambertMaterial({color:0xffff00, overdraw: true});  
+    new THREE.MeshLambertMaterial({color:0xffff00, overdraw: true});
   box_material = Physijs.createMaterial(blue_material);
   head_material = Physijs.createMaterial(new THREE.MeshFaceMaterial(
     [blue_material, black_material, black_material,
@@ -119,10 +119,11 @@ function init() {
     }
   }
 
-  var box, cube, constraint,
+  var box, constraint,
       haba = Number($('#haba').val()),
       okuyuki = Number($('#okuyuki').val()),
-      takasa = 5, space = 1;
+      takasa = 5, space = 1,
+      w,h,d,x,y,z,m;
 
   count = 0;
   paused = false;
@@ -133,19 +134,30 @@ function init() {
 
   boxes = [];
   for ( var i = 0; i < 5; i++ ) {
-    cube = new THREE.CubeGeometry(haba, takasa, okuyuki);
-    if ( i !== 4 )
-      box = new Physijs.BoxMesh(cube, box_material);
-    else
-      box = new Physijs.BoxMesh(
-        cube,
-        $('#front').attr('checked') == null ? head_material : head_material2);
-    box.position.set(0, -35+i*(takasa+space), -10);
-    if ( i === 3 && $('#arch').attr('checked') != null )
-      box.position.z -= 0.1 * okuyuki;
-    else if ( i === 4 && $('#arch').attr('checked') != null )
-      box.position.z -= 0.35 * okuyuki;
-    box.rotation.set(0,0,0);
+    switch (i) {
+    case 3:
+      w = haba; h = takasa; d = okuyuki;
+      x = 0; y = -35+i*(takasa+space); z = -10;
+      if ( $('#arch').attr('checked') != null )
+        z -= 0.1 * okuyuki;
+      m = box_material;
+      break;
+    case 4:
+      w = haba; h = takasa; d = okuyuki;
+      x = 0; y = -35+i*(takasa+space); z = -10;
+      if ( $('#arch').attr('checked') != null )
+        z -= 0.35 * okuyuki;
+      m = $('#front').attr('checked') == null ? head_material : head_material2;
+      break;
+    default:
+      w = haba; h = takasa; d = okuyuki;
+      x = 0; y = -35+i*(takasa+space); z = -10;
+      m = box_material;
+      break;
+    }
+
+    box = new Physijs.BoxMesh(new THREE.CubeGeometry(w,h,d), m);
+    box.position.set(x,y,z);
     box.castShadow = true;
     boxes.push(box);
   }
