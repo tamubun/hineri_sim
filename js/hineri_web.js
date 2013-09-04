@@ -8,28 +8,44 @@ path.pop();
 path.push('js/ammo.js');
 Physijs.scripts.ammo = path.join('/');
 
-var started, paused, count, controls, arm_constraints, jumptime,
-    box_material, red_material, green_material, head_material,
-    projector, renderer, scene, ground, wall, camera, bottom;
+var started, paused, count, controls, jumptime,
+    boxes, constraints, arm_constraints,
+    box_material, red_material, green_material, head_material, head_material2,
+    renderer, gl_rend, canvas_rend, scene, ground, wall, camera, bottom;
 
 function initGlobal() {
-  projector = new THREE.Projector;
+  // Renderers
+  gl_rend = new THREE.WebGLRenderer();
+  gl_rend.shadowMapEnabled = true;
+  gl_rend.setSize(window.innerWidth*0.95, window.innerHeight*0.95);
+  canvas_rend = new THREE.CanvasRenderer();
+  canvas_rend.setSize(window.innerWidth*0.95, window.innerHeight*0.95);
+  renderer = null;
 
   // Materials
-  box_material = Physijs.createMaterial(new THREE.MeshLambertMaterial(
-    {color:0x3300cc, overdraw: 0.5}));
-  head_material = Physijs.createMaterial(new THREE.MeshLambertMaterial(
-    {vertexColors: THREE.FaceColors, overdraw: 0.5}));
+  var blue_material =
+    new THREE.MeshLambertMaterial({color:0x3300cc, overdraw: true});
+  var black_material =
+    new THREE.MeshLambertMaterial({color:0x000000, overdraw: true});
+  var face_material =
+    new THREE.MeshLambertMaterial({color:0xffff00, overdraw: true});
+  box_material = Physijs.createMaterial(blue_material);
+  head_material = Physijs.createMaterial(new THREE.MeshFaceMaterial(
+    [blue_material, black_material, black_material,
+     black_material, face_material, black_material]));
+  head_material2 = Physijs.createMaterial(new THREE.MeshFaceMaterial(
+    [blue_material, black_material, black_material,
+     black_material, black_material, face_material]));
   red_material = Physijs.createMaterial(new THREE.MeshLambertMaterial(
-    {color:0xff5500, overdraw: 0.5}));
+    {color:0xff5500, overdraw: true}));
   green_material = Physijs.createMaterial(new THREE.MeshLambertMaterial(
-    {color:0x55ff00, overdraw: 0.5}));
+    {color:0x55ff00, overdraw: true}));
 
   // Ground
   ground = new Physijs.BoxMesh(
     new THREE.CubeGeometry(100, 1, 100),
     Physijs.createMaterial(
-      new THREE.MeshLambertMaterial({color:0x555555, overdraw: 0.5}),
+      new THREE.MeshLambertMaterial({color:0x555555, overdraw: true}),
         .8, // high friction
         .4  // low restitution
     ),
@@ -42,26 +58,8 @@ function initGlobal() {
     new THREE.CubeGeometry(0.1, 300, 100),
     new THREE.MeshBasicMaterial(
       {color: 0x550000, transparent: true, opacity: 0.3}));
-}
-
-function init() {
-  count = 0;
-  paused = false;
-  jumptime = -1000;
-
-  var webgl = $('#gl').attr('checked') != null;
-  if ( webgl ) {
-    renderer = new THREE.WebGLRenderer();
-    renderer.shadowMapEnabled = true;
-  } else {
-    renderer = new THREE.CanvasRenderer();
-  }
-  renderer.setSize(window.innerWidth*0.95, window.innerHeight*0.95);
-  $('#viewport').append(renderer.domElement);
 
   scene = new Physijs.Scene;
-  scene.setGravity(
-    new THREE.Vector3(0, $('#grav').attr('checked') != null ? -30 : 0, 0));
   scene.addEventListener(
     'update',
     function() {
@@ -93,62 +91,97 @@ function init() {
   var light = new THREE.DirectionalLight(0xFFFFFF);
   light.position.set(20, 40, 35);
   light.target.position.copy(scene.position);
-  if ( webgl ) {
-    light.castShadow = true;
-    light.shadowCameraLeft = -60;
-    light.shadowCameraTop = -60;
-    light.shadowCameraRight = 60;
-    light.shadowCameraBottom = 60;
-    light.shadowDarkness = .7;
-  }
+  light.castShadow = true;
+  light.shadowCameraLeft = -60;
+  light.shadowCameraTop = -60;
+  light.shadowCameraRight = 60;
+  light.shadowCameraBottom = 60;
+  light.shadowDarkness = .7;
   scene.add(light);
   light = new THREE.AmbientLight(0x404040);
   scene.add(light);
+}
+
+function init() {
+  if ( $('#gl').attr('checked') != null ) {
+    if ( renderer !== gl_rend ) {
+      if ( renderer != null )
+        $('#viewport').children().remove();
+      renderer = gl_rend;
+      $('#viewport').append(renderer.domElement);
+    }
+  } else {
+    if ( renderer !== canvas_rend ) {
+      if ( renderer != null )
+        $('#viewport').children().remove();
+      renderer = canvas_rend;
+      $('#viewport').append(renderer.domElement);
+    }
+  }
+
+  var box, constraint,
+      haba = Number($('#haba').val()),
+      okuyuki = Number($('#okuyuki').val()),
+      takasa = 5, space = 1,
+      len = ($('#arm').attr('checked') != null) ? 7 : 5,
+      w,h,d,x,y,z,m;
+
+  count = 0;
+  paused = false;
+  jumptime = -1000;
+
+  scene.setGravity(
+    new THREE.Vector3(0, $('#grav').attr('checked') != null ? -30 : 0, 0));
+
   scene.add(ground);
   if ( $('#wall').attr('checked') != null )
     scene.add(wall);
 
-  var box, boxes = [], constraint,
-      haba = Number($('#haba').val()),
-      okuyuki = Number($('#okuyuki').val()),
-      takasa = 5, space = 1;
-
-  for ( var i = 0; i < 5; i++ ) {
-    var cube = new THREE.CubeGeometry(haba, takasa, okuyuki);
-    if ( i === 4 ) {
-      var c;
-      for ( var j = 0; j < 12; ++j ) {
-        switch (j) {
-        case 4:
-        case 5:
-          c = 0x000000; break;
-        case 10:
-        case 11:
-          c = ($('#front').attr('checked') != null)? 0xffff00: 0x000000; break;
-        case 8:
-        case 9:
-          c = ($('#front').attr('checked') == null)? 0xffff00: 0x000000; break;
-        default:
-          c = 0x3300cc; break;
-        }
-        cube.faces[j].color.setHex(c);
-      }
-      box = new Physijs.BoxMesh(cube, head_material);
-    } else {
-      box = new Physijs.BoxMesh(cube, box_material);
+  boxes = [];
+  for ( var i = 0; i < len; i++ ) {
+    switch (i) {
+    case 3: // 胸
+      w = haba; h = takasa; d = okuyuki;
+      x = 0; y = -35+i*(takasa+space); z = -10;
+      if ( $('#arch').attr('checked') != null )
+        z -= 0.1 * okuyuki;
+      m = box_material;
+      break;
+    case 4: // 頭
+      w = haba; h = takasa; d = okuyuki;
+      x = 0; y = -35+i*(takasa+space); z = -10;
+      if ( $('#arch').attr('checked') != null )
+        z -= 0.35 * okuyuki;
+      m = $('#front').attr('checked') == null ? head_material : head_material2;
+      break;
+    case 5: // 腕
+    case 6:
+      w = 0.2 * haba; h = 1.8 * takasa; d = 0.2 * haba;
+      x = boxes[3].position.x + (i === 5 ? 1 : -1) * 0.7 * haba;
+      y = boxes[3].position.y + takasa;
+      z = boxes[3].position.z;
+      m = i == 5 ? red_material : green_material;
+      break;
+    default:
+      w = haba; h = takasa; d = okuyuki;
+      x = 0; y = -35+i*(takasa+space); z = -10;
+      m = box_material;
     }
-    box.position.set(0, -35+i*(takasa+space), -10);
+
+    box = new Physijs.BoxMesh(new THREE.CubeGeometry(w,h,d), m);
+    box.position.set(x,y,z);
     box.castShadow = true;
-    if ( i === 3 && $('#arch').attr('checked') != null )
-      box.position.z -= 0.1 * okuyuki;
-    else if ( i === 4 && $('#arch').attr('checked') != null )
-      box.position.z -= 0.35 * okuyuki;
     boxes.push(box);
-    scene.add(box);
+  }
+  bottom = boxes[0];
 
-    if ( i === 0 )
-      continue;
+  for ( var i = 0; i < len; ++i )
+    scene.add(boxes[i]);
 
+  constraints = [];
+  arm_constraints = [];
+  for ( var i = 1; i < 5; ++i ) {
+    box = boxes[i];
     constraint = new Physijs.HingeConstraint(
       box,
       boxes[i-1],
@@ -156,6 +189,7 @@ function init() {
       new THREE.Vector3(1, 0, 0)
     );
     scene.addConstraint(constraint);
+    constraints.push(constraint);
     constraint = new Physijs.HingeConstraint(
       box,
       boxes[i-1],
@@ -163,21 +197,12 @@ function init() {
       new THREE.Vector3(0, 0, 1)
     );
     scene.addConstraint(constraint);
+    constraints.push(constraint);
   }
-  bottom = boxes[0];
 
-  arm_constraints = [];
   if ( $('#arm').attr('checked') != null ) {
     for ( var i = 0; i < 2; ++i ) {
-      box = new Physijs.BoxMesh(
-        new THREE.CubeGeometry(0.2*haba, 1.8 * takasa, 0.2*haba),
-        i === 0 ? red_material : green_material);
-      box.position.set(
-        boxes[3].position.x + (i === 0 ? 1 : -1) * 0.7 * haba,
-        boxes[3].position.y + takasa,
-        boxes[3].position.z);
-      box.castShadow = true;
-      scene.add(box);
+      box = boxes[i+5];
       constraint = new Physijs.HingeConstraint(
         box,
         boxes[3],
@@ -189,12 +214,29 @@ function init() {
       );
       scene.addConstraint(constraint);
       constraint.enableAngularMotor(1000, (i === 0 ? 1 : -1) * 500);
+      constraints.push(constraint);
       arm_constraints.push(constraint);
     }
   }
 
+  controls.enabled = true;
   requestAnimationFrame(render);
-  scene.simulate();
+  scene.simulate(undefined, 1);
+};
+
+function reset() {
+  for ( var i = 0, len = constraints.length; i < len; ++i ) {
+    scene.removeConstraint(constraints[i]);
+  }
+
+  for ( var i = 0, len = boxes.length; i < len; ++i )
+    scene.remove(boxes[i]);
+  scene.remove(ground);
+
+  if ( $('#wall').attr('checked') != null )
+    scene.remove(wall);
+
+  renderer.render(scene, camera);
 };
 
 function render() {
@@ -268,6 +310,7 @@ $(function() {
     } else {
       started = false;
       controls.enabled = false;
+      reset();
       $('#startstop').val('start');
       $('#pause').attr('disabled', true).val('pause');
       $('#jump').attr('disabled', true);
@@ -275,7 +318,6 @@ $(function() {
       $('#left-arm').val('緑腕↓');
       $('#red-arm').val('赤腕↓');
       $('#right').removeAttr('disabled');
-      $('#viewport').children().remove();
       $('#controls input').removeAttr('disabled');
     }
   });
