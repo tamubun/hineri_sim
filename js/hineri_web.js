@@ -54,11 +54,6 @@ function initGlobal() {
   ground.position.set(0, -50, 0);
   ground.receiveShadow = true;
 
-  wall = new THREE.Mesh(
-    new THREE.CubeGeometry(0.1, 300, 100),
-    new THREE.MeshBasicMaterial(
-      {color: 0x550000, transparent: true, opacity: 0.3}));
-
   scene = new Physijs.Scene;
   scene.addEventListener(
     'update',
@@ -68,6 +63,13 @@ function initGlobal() {
       applyForce();
       scene.simulate(undefined, 1);
     });
+
+  wall = new THREE.Mesh(
+    new THREE.CubeGeometry(0.1, 300, 100),
+    new THREE.MeshBasicMaterial(
+      {color: 0x550000, transparent: true, opacity: 0.3}));
+
+  scene.add(wall);
 
   camera = new THREE.PerspectiveCamera(
     35,
@@ -138,8 +140,7 @@ function init() {
     new THREE.Vector3(0, $('#grav').attr('checked') != null ? -30 : 0, 0));
 
   scene.add(ground);
-  if ( $('#wall').attr('checked') != null )
-    scene.add(wall);
+  wall.visible = $('#wall').attr('checked') != null;
 
   boxes = [];
   for ( var i = 0; i < len; i++ ) {
@@ -237,8 +238,7 @@ function reset() {
     scene.remove(boxes[i]);
   scene.remove(ground);
 
-  if ( $('#wall').attr('checked') != null )
-    scene.remove(wall);
+  wall.visible = false;
 
   renderer.render(scene, camera);
 };
