@@ -266,7 +266,7 @@ function applyForce() {
       offset = new THREE.Vector3(0,0,0)
       bottom.applyImpulse(effect, offset);
     } else {
-      effect = new THREE.Vector3(0,0,1).multiplyScalar(120);
+      effect = new THREE.Vector3(0,0,1).multiplyScalar(0.1*kick);
       offset = new THREE.Vector3(0,-10,0)
       bottom.applyImpulse(effect, offset);
       bottom.applyImpulse(effect.negate(), offset.negate());
@@ -281,9 +281,10 @@ function applyForce() {
       bottom.applyImpulse(effect, offset);
       bottom.applyImpulse(effect.negate(), offset.negate());
     } else {
-      effect = new THREE.Vector3(0,0,1).multiplyScalar(120);
+      effect = new THREE.Vector3(0,0,1).multiplyScalar(kick*0.1);
       offset = new THREE.Vector3(0,-10,0)
       bottom.applyImpulse(effect, offset);
+      bottom.applyImpulse(effect.negate(), offset.negate());
       effect = new THREE.Vector3(0,0,1).multiplyScalar(torque);
       offset = new THREE.Vector3(1,0,0)
       bottom.applyImpulse(effect, offset);
