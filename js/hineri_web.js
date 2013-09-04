@@ -119,8 +119,7 @@ function init() {
     }
   }
 
-  var one = new THREE.Vector3(1,1,1),
-      box, cube, constraint,
+  var box, cube, constraint,
       haba = Number($('#haba').val()),
       okuyuki = Number($('#okuyuki').val()),
       takasa = 5, space = 1;
@@ -141,9 +140,6 @@ function init() {
       box = new Physijs.BoxMesh(
         cube,
         $('#front').attr('checked') == null ? head_material : head_material2);
-    box.geometry.width = haba;
-    box.geometry.depth = okuyuki;
-    box.geometry.height = takasa;
     box.position.set(0, -35+i*(takasa+space), -10);
     if ( i === 3 && $('#arch').attr('checked') != null )
       box.position.z -= 0.1 * okuyuki;
@@ -159,8 +155,6 @@ function init() {
   for ( var i = 0, len = boxes.length; i < len; ++i ) {
     var box = boxes[i];
     scene.add(box);
-    box.setLinearFactor(one);
-    box.setAngularFactor(one);
 
     if ( i === 0 )
       continue;
@@ -194,21 +188,12 @@ function init() {
 };
 
 function reset() {
-  var box, constraint,
-      zero = new THREE.Vector3(0,0,0);
-
   for ( var i = 0, len = constraints.length; i < len; ++i ) {
     scene.removeConstraint(constraints[i]);
   }
 
-  for ( var i = 0, len = boxes.length; i < len; ++i ) {
-    box = boxes[i];
-    box.setAngularFactor(zero);
-    box.setAngularVelocity(zero);
-    box.setLinearFactor(zero);
-    box.setLinearVelocity(zero);
-    scene.remove(box);
-  }
+  for ( var i = 0, len = boxes.length; i < len; ++i )
+    scene.remove(boxes[i]);
   scene.remove(ground);
 
   if ( $('#wall').attr('checked') != null )
