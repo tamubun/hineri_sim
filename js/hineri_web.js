@@ -119,6 +119,10 @@ function init() {
     }
   }
 
+  if ( $('#camera').attr('checked') != null ) {
+    controls.reset();
+  }
+
   var box, constraint,
       haba = Number($('#haba').val()),
       okuyuki = Number($('#okuyuki').val()),
@@ -142,14 +146,14 @@ function init() {
     switch (i) {
     case 3: // 胸
       w = haba; h = takasa; d = okuyuki;
-      x = 0; y = -35+i*(takasa+space); z = -10;
+      x = 0; y = -35+i*(takasa+space); z = 0;
       if ( $('#arch').attr('checked') != null )
         z -= 0.1 * okuyuki;
       m = box_material;
       break;
     case 4: // 頭
       w = haba; h = takasa; d = okuyuki;
-      x = 0; y = -35+i*(takasa+space); z = -10;
+      x = 0; y = -35+i*(takasa+space); z = 0;
       if ( $('#arch').attr('checked') != null )
         z -= 0.35 * okuyuki;
       m = $('#front').attr('checked') == null ? head_material : head_material2;
@@ -164,7 +168,7 @@ function init() {
       break;
     default:
       w = haba; h = takasa; d = okuyuki;
-      x = 0; y = -35+i*(takasa+space); z = -10;
+      x = 0; y = -35+i*(takasa+space); z = 0;
       m = box_material;
     }
 
@@ -185,7 +189,7 @@ function init() {
     constraint = new Physijs.HingeConstraint(
       box,
       boxes[i-1],
-      new THREE.Vector3(0, box.position.y - 0.5*(takasa+space),-10),
+      new THREE.Vector3(0, box.position.y - 0.5*(takasa+space), 0),
       new THREE.Vector3(1, 0, 0)
     );
     scene.addConstraint(constraint);
@@ -193,7 +197,7 @@ function init() {
     constraint = new Physijs.HingeConstraint(
       box,
       boxes[i-1],
-      new THREE.Vector3(0, i*(takasa+1)-13, -10),
+      new THREE.Vector3(0, i*(takasa+1)-13, 0),
       new THREE.Vector3(0, 0, 1)
     );
     scene.addConstraint(constraint);
