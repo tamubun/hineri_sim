@@ -136,10 +136,13 @@ function init() {
   paused = false;
   jumptime = -1000;
 
-  scene.setGravity(
-    new THREE.Vector3(0, $('#grav').attr('checked') != null ? -30 : 0, 0));
+  if ( $('#grav').attr('checked') != null ) {
+    scene.setGravity(new THREE.Vector3(0, -30, 0));
+    scene.add(ground);
+  } else {
+    scene.setGravity(new THREE.Vector3(0, 0, 0));
+  }
 
-  scene.add(ground);
   wall.visible = $('#wall').attr('checked') != null;
 
   boxes = [];
@@ -236,7 +239,9 @@ function reset() {
 
   for ( var i = 0, len = boxes.length; i < len; ++i )
     scene.remove(boxes[i]);
-  scene.remove(ground);
+
+  if ( $('#grav').attr('checked') != null )
+    scene.remove(ground);
 
   wall.visible = false;
 
