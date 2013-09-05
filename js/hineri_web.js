@@ -273,7 +273,7 @@ function applyForce() {
     if ( $('#twist').attr('checked') != null ) {
       // 捻りトルク
       effect = new THREE.Vector3(0,0,1).multiplyScalar(torque);
-      offset = new THREE.Vector3(1,0,0)
+      offset = new THREE.Vector3(10,0,0)
       bottom.applyImpulse(effect, offset);
       bottom.applyImpulse(effect.negate(), offset.negate());
     }
@@ -286,7 +286,7 @@ function applyForce() {
     if ( $('#twist').attr('checked') != null ) {
       // 捻りトルク
       effect = new THREE.Vector3(0,0,1).multiplyScalar(torque);
-      offset = new THREE.Vector3(1,0,0)
+      offset = new THREE.Vector3(10,0,0)
       bottom.applyImpulse(effect, offset);
       bottom.applyImpulse(effect.negate(), offset.negate());
     }
