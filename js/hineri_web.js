@@ -88,6 +88,7 @@ function initGlobal() {
   controls.noPan = false;
   controls.staticMoving = true;
   controls.dynamicDampingFactor = 0.3;
+  controls.enabled = false;
 
   // Light
   var light = new THREE.DirectionalLight(0xFFFFFF);
