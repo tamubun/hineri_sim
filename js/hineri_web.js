@@ -9,7 +9,7 @@ path.push('js/ammo.js');
 Physijs.scripts.ammo = path.join('/');
 
 var started, paused, count, controls, jumptime,
-    boxes, constraints, arm_constraints,
+    boxes, constraints, arm_constraints, arm_type,
     box_material, red_material, green_material, head_material, head_material2,
     renderer, gl_rend, canvas_rend, scene, ground, wall, camera, bottom;
 
@@ -136,6 +136,7 @@ function init() {
   count = 0;
   paused = false;
   jumptime = -1000;
+  arm_type = $('#arm-type').val();
 
   if ( $('#grav').attr('checked') != null ) {
     scene.setGravity(new THREE.Vector3(0, -30, 0));
@@ -212,18 +213,50 @@ function init() {
   if ( $('#arm').attr('checked') != null ) {
     for ( var i = 0; i < 2; ++i ) {
       box = boxes[i+5];
-      constraint = new Physijs.HingeConstraint(
-        box,
-        boxes[3],
-        new THREE.Vector3(
-          boxes[3].position.x + (i === 0 ? 1 : -1) * 0.65 * haba,
-          boxes[3].position.y,
-          boxes[3].position.z),
-        new THREE.Vector3(1, 0, 0)
-      );
-      scene.addConstraint(constraint);
-      constraint.setLimits(0, Math.PI, 0.0001, 0);
-      constraint.enableAngularMotor(1000, -500);
+      switch (arm_type) {
+      case "side":
+        constraint = new Physijs.HingeConstraint(
+          box,
+          boxes[3],
+          new THREE.Vector3(
+            boxes[3].position.x + (i === 0 ? 1 : -1) * 0.65 * haba,
+            boxes[3].position.y,
+            boxes[3].position.z),
+          new THREE.Vector3(0, 0, i==0 ? -1 : 1)
+        );
+	scene.addConstraint(constraint);
+        constraint.setLimits(0, Math.PI, 0.0001, 0);
+        constraint.enableAngularMotor(1000, -500);
+        break;
+      case "front":
+        constraint = new Physijs.HingeConstraint(
+          box,
+          boxes[3],
+          new THREE.Vector3(
+            boxes[3].position.x + (i === 0 ? 1 : -1) * 0.65 * haba,
+            boxes[3].position.y,
+            boxes[3].position.z),
+          new THREE.Vector3(1, 0, 0)
+        );
+	scene.addConstraint(constraint);
+        constraint.setLimits(0, Math.PI, 0.0001, 0);
+        constraint.enableAngularMotor(1000, -500);
+        break;
+      case "straight":
+        constraint = new Physijs.SliderConstraint(
+          box,
+          boxes[3],
+          new THREE.Vector3(
+            boxes[3].position.x + (i === 0 ? 1 : -1) * 0.65 * haba,
+            boxes[3].position.y,
+            boxes[3].position.z),
+          new THREE.Vector3(0, 0, -Math.PI/2) // 最後のパラメーターはオイラー角
+        );
+	scene.addConstraint(constraint);
+        constraint.setLimits(-1.9 * takasa, 0, 0, 0);
+        constraint.enableLinearMotor(1000, 500);
+        break;
+      }
       constraints.push(constraint);
       arm_constraints.push(constraint);
     }
@@ -275,7 +308,7 @@ function applyForce() {
     if ( $('#twist').attr('checked') != null ) {
       // 捻りトルク
       effect = new THREE.Vector3(0,0,1).multiplyScalar(torque);
-      offset = new THREE.Vector3(10,0,0)
+      offset = new THREE.Vector3(10,0,0);
       bottom.applyImpulse(effect, offset);
       bottom.applyImpulse(effect.negate(), offset.negate());
     }
@@ -311,6 +344,7 @@ $(function() {
       $('#jump').removeAttr('disabled');
       $('#right').removeAttr('disabled');
       $('#controls input').attr('disabled', true);
+      $('#arm-type').attr('disabled', true);
       if ( $('#arm').attr('checked') == null )
         $('.arm').each(function() { $(this).attr('disabled', true); });
       else
@@ -327,6 +361,7 @@ $(function() {
       $('#red-arm').val('赤腕↓');
       $('#right').removeAttr('disabled');
       $('#controls input').removeAttr('disabled');
+      $('#arm-type').removeAttr('disabled');
     }
   });
 
@@ -345,18 +380,42 @@ $(function() {
   });
 
   $('.arm').click(function() {
-    var up = $(this).hasClass('up');
+    var up = $(this).hasClass('up'),
+        green = $(this).hasClass('green');
+
     $(this).toggleClass('up');
     $(this).val(
-      ($(this).hasClass('green') ? '緑腕' : '赤腕') + (up ? '↑' :'↓'));
-    if ( $(this).hasClass('green') ) {
-      arm_constraints[1].setLimits(
-        up ? -0.05 : 0, up ? Math.PI : Math.PI*1.05, 0.0001, 0);
-      arm_constraints[1].enableAngularMotor(1000, (up ? 1 : -1) * 500);
-    } else {
-      arm_constraints[0].setLimits(
-        up ? -0.05 : 0, up ? Math.PI : Math.PI*1.05, 0.0001, 0);
-      arm_constraints[0].enableAngularMotor(1000, (up ? 1 : -1) * 500);
+      (green ? '緑腕' : '赤腕') + (up ? '↑' :'↓'));
+    switch (arm_type) {
+    case "side":
+      if ( green ) {
+        arm_constraints[1].setLimits(
+          up ? -0.05 : 0, up ? Math.PI : Math.PI*1.05, 0.0001, 0);
+        arm_constraints[1].enableAngularMotor(1000, (up ? 1 : -1) * 500);
+      } else {
+        arm_constraints[0].setLimits(
+          up ? -0.05 : 0, up ? Math.PI : Math.PI*1.05, 0.0001, 0);
+        arm_constraints[0].enableAngularMotor(1000, (up ? 1 : -1) * 500);
+      }
+      break;
+    case "front":
+      if ( green ) {
+        arm_constraints[1].setLimits(
+          up ? -0.05 : 0, up ? Math.PI : Math.PI*1.05, 0.0001, 0);
+        arm_constraints[1].enableAngularMotor(1000, (up ? 1 : -1) * 500);
+      } else {
+        arm_constraints[0].setLimits(
+          up ? -0.05 : 0, up ? Math.PI : Math.PI*1.05, 0.0001, 0);
+        arm_constraints[0].enableAngularMotor(1000, (up ? 1 : -1) * 500);
+      }
+      break;
+    case "straight":
+      if ( green ) {
+        arm_constraints[1].enableLinearMotor((up ? -1 : 1) * 1000, 500);
+      } else {
+        arm_constraints[0].enableLinearMotor((up ? -1 : 1) * 1000, 500);
+      }
+      break;
     }
   });
 });
