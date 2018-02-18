@@ -2,10 +2,10 @@
 
 var path = location.pathname.split("/");
 path.pop();
-path.push('js/physijs_worker.js');
+path.push('../../js/physijs_worker.js');
 Physijs.scripts.worker = path.join('/');
 path.pop();
-path.push('js/ammo.js');
+path.push('../../js/ammo.js');
 Physijs.scripts.ammo = path.join('/');
 
 var started, paused, count, controls, jumptime,
